@@ -33,22 +33,22 @@
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
 
-causal_mediation <- function(data = dat,
-                             out.model = glm(cens ~ x + m + c + x*m,
-                                             data = dat,
-                                             family = "binomial"),
-                             med.model = glm(m ~ x + c,
-                                             data = dat,
-                                             family = "binomial"),
-                             treat = "x",
-                             mediator = "m",
-                             out.reg = "logistic",
-                             med.reg = "logistic",
-                             a = 1,
-                             a_star = 0,
-                             m = 0,
-                             boot_rep = 0,
-                             interaction = TRUE, ...){
+mediator <- function(data = dat,
+                     out.model = glm(cens ~ x + m + c + x*m,
+                                     data = dat,
+                                     family = "binomial"),
+                     med.model = glm(m ~ x + c,
+                                     data = dat,
+                                     family = "binomial"),
+                     treat = "x",
+                     mediator = "m",
+                     out.reg = "logistic",
+                     med.reg = "logistic",
+                     a = 1,
+                     a_star = 0,
+                     m = 0,
+                     boot_rep = 0,
+                     interaction = TRUE, ...){
 
   # calculating covariate values to use later on
   betas <- coef(med.model) # coefficients from mediation model
@@ -67,6 +67,14 @@ causal_mediation <- function(data = dat,
   # Covariance matrix for standar errors
   SigmaB <- vcov(med.model)
   SigmaT <- vcov(out.model)
+  # including 0 for variance for interaction if missing
+  if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
+    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+    dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
+    dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
+  } else {
+    SigmaT <- SigmaT
+  }
   SigmaT <- SigmaT[c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames),
                    c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames)]
   Sigma <- rbind(cbind(SigmaB, matrix(0, ncol = ncol(SigmaT), nrow = nrow(SigmaB))),
@@ -83,9 +91,12 @@ causal_mediation <- function(data = dat,
 
   rm(SigmaB, SigmaT)
 
-  ##### --------------------------------------------------------------------------------- #####
-  # Calculate effect estimates and confidence intervals (delta method)
-  ##### --------------------------------------------------------------------------------- #####
+  # setting coefficients for no interaction = 0 -------------------------------
+  out.model$coefficients[paste0(treat, ":", mediator)] <- 0
+
+  ##### ----------------------------------------------------------------- #####
+  # Calculate effect estimates and confidence intervals (delta method) --------
+  ##### ----------------------------------------------------------------- #####
   if (out.reg == "logistic" & med.reg == "logistic") {
 
     # calculate effect estimates
