@@ -1,0 +1,122 @@
+---
+title: "Introduction to causal mediation"
+date: "`r Sys.Date()`"
+output: 
+  rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to causal mediation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette introduces `mediator`and provides an overview for mediation analysis under the counterfactual framework. 
+
+***
+
+## Terminology -- currently taken from Valeri and VanderWeele
+
+**Controlled Direct Effect (CDE)** expresses how much the outcome would change on average if the mediator were controlled at level *m* uniformly in the population but the treatment were changed from level *a*=0 to level *a*=1
+
+**Natural Direct Effect (NDE)** expresses how much the outcome would change if the exposure were set at level *a*=1 versus level *a*=0 but for each individual the mediatior were kept at the level it woud have taken in the absense of the exposure. 
+
+**Natural Indirect Effect (NIE)** expresses how much the outcome would change on average if the exposure were controlled at level *a*=1, but the mediator were changed from the level if would take if *a*=0 to the level it would take if *a*=1. 
+
+**Total Effect** how much the outcome would change overall for a change in the exposure from level *a*=0 to level *a*=1.  
+
+**Proportion Mediated** the extent to which the total effect of the exposure on the outcome operates through the mediator
+
+## Comparison to other tools 
+
+`mediator` is related to the SAS/SPSS macros developed by Valeri and VanderWeele, however minor differences exist between the programs which sometimes results in variation in estimates and confidence intervals. 
+
+When the macros calculate the CI7 using the delta method, they use the hard coded values 1.96 and -1.96 while `mediator` uses `c(-1,1)*qnorm(.975)`. Languages also differ with respect to rounding. 
+
+The SAS macro takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while `mediator` takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using a dataset with 250 observations and 100 replicates). 
+
+When using bootstrapping the SAS macro bootstraps both the effect estimates and CI, while the R function only uses the bootstrap for obtaining the CI. Users should use the bootstrap function with caution, especially when using small datasets. We recommend using a minimum 10000 replicates. Using more replicates will take more time, however it will provide more precise estimates. 
+
+```{r setup}
+#library(mediator)
+```
+
+
+## Equations
+
+For a continuous outcome and mediator: 
+
+Models for Y (outcome) and M (mediator), correctly specified
+
+<center>
+
+![](https://latex.codecogs.com/gif.latex?E%5BY%7Ca%2Cm%2Cc%5D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?E%5BM%7Ca%2Cc%5D%20%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+
+</center>
+
+Average controlled direct effect, natural direct effect and natural indirect effect 
+
+<center>
+
+![](https://latex.codecogs.com/gif.latex?E%5BY_%7Bam%7D%20-%20Y_%7Ba*m%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29)
+
+![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%5E%7B*%7D%7D%7D%20-%20Y_%7Ba%5E%7B*%7DM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%3D%5C%7B%5Ctheta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7D%28%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%20%5Cbeta%27_%7B2%7Dc%29%5C%7D%28a-a%5E%7B*%7D%29)
+
+![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%7D%7D-Y_%7BaM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B2%7D%5Cbeta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7D%5Cbeta_%7B1%7Da%29%28a-a%5E%7B*%7D%29)
+
+</center>
+
+Binary outcome and continuous mediator
+
+<center>
+
+![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28Y%3D1%7Ca%2Cm%2Cc%29%5C%7D%3D%5Ctheta_%7B0%7D&plus;%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?E%5BM%7Ca%2Cc%5D%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?OR%5E%7BCDE%7D%28m%29%20%3D%20exp%5C%7B%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29%5C%7D)
+
+![](https://latex.codecogs.com/gif.latex?OR%5E%7BNDE%7D%20%3D%20exp%5C%7B%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7D%5Cbeta_%7B0%7D&plus;%5Ctheta_%7B3%7D%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Ctheta_%7B3%7D%5Cbeta%27_%7B2%7DC&plus;%5Ctheta_%7B3%7D%5Ctheta_%7B2%7D%5Csigma%5E%7B2%7D%29%28a-a%5E%7B2%7D%29%5C%7D)
+
+![](https://latex.codecogs.com/gif.latex?OR%5E%7BNIE%7D%20%3D%20exp%5C%7B%28%5Ctheta_%7B2%7D%5Cbeta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7D%5Cbeta_%7B1%7Da%29%28a-a%5E%7B*%7D%29%5C%7D)
+
+</center>
+
+Continuous outcome and binary mediator
+
+<center>
+
+![](https://latex.codecogs.com/gif.latex?E%5BY%7Ca%2Cm%2Cc%5D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28M%3D1%7Ca%2Cc%29%5C%7D%3D%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?E%5BY_%7Bam%7D-Y_%7Ba%5E%7B*%7Dm%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29)
+
+![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%5E%7B*%7D%7D%7D-Y_%7Ba%5E%7B*%7DM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%3D%5C%7B%5Ctheta_%7B1%7D%28a-a%5E%7B*%7D%29%5C%7D%20&plus;%20%5C%7B%5Ctheta_%7B3%7D%28a-a%5E%7B*%7D%29%5C%7D%5Cdfrac%7Bexp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%7B1&plus;exp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D)
+
+![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%7D%7D-Y_%7BaM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%3D%28%5Ctheta_%7B2%7D&plus;%5Ctheta_%7B3%7Da%29%20%5C%7B%5Cdfrac%7Bexp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%7B1&plus;exp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc%5D%7D-%5Cdfrac%7Bexp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%7B1&plus;exp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%5C%7D)
+
+</center>
+
+Binary outcome and mediator
+
+<center>
+
+![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28Y%3D1%7Ca%2Cm%2Cc%29%5C%7D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28M%3D1%7Ca%2Cc%29%5C%7D%20%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+
+![](https://latex.codecogs.com/gif.latex?OR%5E%7BCDE%7D%28m%29%3Dexp%5B%28%5Ctheta_1%20&plus;%20%5Ctheta_3m%29%28a-a%5E*%29%5D)
+
+![](https://latex.codecogs.com/gif.latex?OR%5E%7BNDE%7D%20%3D%20%5Cdfrac%7Bexp%28%5Ctheta_1a%29%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a&plus;%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%7D%7Bexp%28%5Ctheta_1a%5E*%29%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a%5E*&plus;%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%7D)
+
+![](https://latex.codecogs.com/gif.latex?OR%5E%7BNIE%7D%20%3D%20%5Cdfrac%7B%5C%7B1&plus;exp%28%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a&plus;%5Cbeta_0&plus;%5Cbeta_1a&plus;%5Cbeta%27_2c%29%5C%7D%7D%7B%5C%7B1&plus;exp%28%5Cbeta_0&plus;%5Cbeta_1a&plus;%5Cbeta%27_2c%29%5C%7D%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a&plus;%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%7D)
+
+</center>
