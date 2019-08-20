@@ -92,7 +92,12 @@ mediator <- function(data = dat,
   rm(SigmaB, SigmaT)
 
   # setting coefficients for no interaction = 0 -------------------------------
-  out.model$coefficients[paste0(treat, ":", mediator)] <- 0
+  if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
+    out.model$coefficients[paste0(treat, ":", mediator)] <- 0
+  } else {
+    out.model$coefficients[paste0(treat, ":", mediator)] <-
+      out.model$coefficients[paste0(treat, ":", mediator)]
+  }
 
   ##### ----------------------------------------------------------------- #####
   # Calculate effect estimates and confidence intervals (delta method) --------
