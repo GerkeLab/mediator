@@ -10,19 +10,42 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
+# library(mediator)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
 
-This vignette introduces `mediator`and provides an overview for mediation analysis under the counterfactual framework. 
+This vignette introduces `mediator` and provides an overview for mediation analysis under the counterfactual framework. 
 
 ***
 
+## Data
+
+In this vignette, we will use randomly generated data - `example250.rda`. The data is an extended version of the data provided in the SAS macro `%mediation`, with the same columns but 250 rows. 
+
+```{r}
+load("../data/example250.rda")
+
+head(example250)
+
+dim(example250)
+
+```
+
+## Introduction 
+
+In this vignette, we will : 
+
+1. review terminology associated with mediation analysis
+2. look at the basic usage of `mediator`
+3. compare `mediator` to it's SAS macro counterpart - `%mediation`
+4. provide the equations used to calculate various estimates
+
 ## Terminology -- currently taken from Valeri and VanderWeele
 
-**Controlled Direct Effect (CDE)** expresses how much the outcome would change on average if the mediator were controlled at level *m* uniformly in the population but the treatment were changed from level *a*=0 to level *a*=1
+**Controlled Direct Effect (CDE)** expresses how much the outcome would change on average if the mediator were controlled at level *m* uniformly in the population but the treatment were changed from level *a*=0 to level *a*=1.
 
 **Natural Direct Effect (NDE)** expresses how much the outcome would change if the exposure were set at level *a*=1 versus level *a*=0 but for each individual the mediatior were kept at the level it woud have taken in the absense of the exposure. 
 
@@ -30,22 +53,67 @@ This vignette introduces `mediator`and provides an overview for mediation analys
 
 **Total Effect** how much the outcome would change overall for a change in the exposure from level *a*=0 to level *a*=1.  
 
-**Proportion Mediated** the extent to which the total effect of the exposure on the outcome operates through the mediator
+**Proportion Mediated** the extent to which the total effect of the exposure on the outcome operates through the mediator.
 
-## Comparison to other tools 
+## Usage
 
-`mediator` is related to the SAS/SPSS macros developed by Valeri and VanderWeele, however minor differences exist between the programs which sometimes results in variation in estimates and confidence intervals. 
+`mediator` returns a data frame containing the point estimates and CIs for CDE, NDE, NIE and TE as well as the point estimates for the PM. The function assumes appropriate modeling on the part of the user and allows (but does not require) interaction between the exposure and the mediator. 
 
-When the macros calculate the CI7 using the delta method, they use the hard coded values 1.96 and -1.96 while `mediator` uses `c(-1,1)*qnorm(.975)`. Languages also differ with respect to rounding. 
+## mediator vs %mediation
 
-The SAS macro takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while `mediator` takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using a dataset with 250 observations and 100 replicates). 
+`mediator` is related to the SAS/SPSS macros developed by Valeri and VanderWeele, `%mediation`, however minor differences exist between the programs which sometimes results in variation in estimates and confidence intervals. 
 
-When using bootstrapping the SAS macro bootstraps both the effect estimates and CI, while the R function only uses the bootstrap for obtaining the CI. Users should use the bootstrap function with caution, especially when using small datasets. We recommend using a minimum 10000 replicates. Using more replicates will take more time, however it will provide more precise estimates. 
+When the macros calculate the CI using the delta method, they use the hard coded values 1.96 and -1.96 while `mediator` uses `c(-1,1)*qnorm(.975)`. Languages also differ with respect to rounding. 
 
-```{r setup}
-#library(mediator)
+The `%mediation` takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while `mediator` takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using the `example250.rda` dataset with 250 observations and 100 replicates). 
+
+When using bootstrapping, `%mediation` bootstraps both the effect estimates and CI, while the R function `mediator` only uses the bootstrap for obtaining the CI. Users should use the bootstrap function with caution, especially when using small datasets. We recommend using a minimum 10000 replicates. Using more replicates will take more time, however it will provide more precise estimates. This is especially important when using small datasets, as using a small number of replicated could make the CI wonky. 
+
+Below are examples of results from `mediator` and `%mediation` for comparison. 
+
+```{r, echo = FALSE}
+
+sas1 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(0.075592, 0.066247, -0.007238,
+                                             0.059009, -0.12266),
+                                `Lower 95% CI` = c(-0.20237, -0.21177,
+                                                   -0.04745, -0.21947, NA),
+                                `Upper 95% CI` = c(0.35356, 0.34426, 0.03298,
+                                                   0.33748, NA)
+                            ))
+
+r1 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(0.07559, 0.06625, -0.00724,
+                                             0.05901, -0.12266),
+                                `Lower 95% CI` = c(-0.20237, -0.21176, -0.01547,
+                                                   -0.21946, NA),
+                                `Upper 95% CI` = c(0.35355, 0.34426, 0.00099,
+                                                   0.33748, NA)
+                           ))
+
+knitr::kable(list(r1, sas1), caption = c("mediator","mediation"))
+
 ```
 
+```{r, eval=FALSE, echo=FALSE}
+
+sas2 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(),
+                                `Lower 95% CI` = c(),
+                                `Upper 95% CI` = c()
+                            ))
+
+r2 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(),
+                                `Lower 95% CI` = c(),
+                                `Upper 95% CI` = c()
+                           ))
+
+```
 
 ## Equations
 
