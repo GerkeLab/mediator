@@ -6,7 +6,7 @@ output:
 vignette: >
   %\VignetteIndexEntry{Introduction to causal mediation}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r, include = FALSE}
