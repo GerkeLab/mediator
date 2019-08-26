@@ -10,7 +10,7 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-# library(mediator)
+library(mediator)
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -26,12 +26,9 @@ This vignette introduces `mediator` and provides an overview for mediation analy
 In this vignette, we will use randomly generated data - `example250.rda`. The data is an extended version of the data provided in the SAS macro `%mediation`, with the same columns but 250 rows. 
 
 ```{r}
-load("../data/example250.rda")
-
 head(example250)
 
 dim(example250)
-
 ```
 
 ## Introduction 
@@ -85,6 +82,8 @@ When using bootstrapping, `%mediation` bootstraps both the effect estimates and 
 
 Below are examples of results from `mediator` (left) and `%mediation` (right) for comparison. 
 
+#### Continuous outcome and mediator
+
 ```{r, eval = FALSE}
 mediator(data=example250,
          out.model = lm(y ~ x + c + m + x*c, data = example250),
@@ -125,41 +124,142 @@ knitr::kable(list(r1, sas1))
 
 ```
 
-```{r, eval=FALSE, echo=FALSE}
+#### Binary outcome and mediator 
+
+```{r, eval = FALSE}
+mediator(data = example250,
+         out.model = glm(cens ~ x + m + c + x*m, data=example250, family="binomial"),
+         med.model = glm(m ~ x + c, data = example250, family = "binomial"),
+         treat = "x", mediator = "m",
+         out.reg = "logistic", med.reg = "logistic")
+```
+
+```{sas, eval = FALSE}
+%mediation(data = example250, yvar = cens, avar = x, mvar = m, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = logistic, interaction = true, casecontrol=,output=,c=,boot=,cens=);
+run;
+```
+
+```{r, echo = FALSE}
 
 sas2 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(),
-                                `Lower 95% CI` = c(),
-                                `Upper 95% CI` = c()
+                                Estimate = c(0.57804, 0.62896, 1.00288, 
+                                             0.63078, -0.004912409),
+                                `Lower 95% CI` = c(0.17510, 0.26576, 0.90561,
+                                                   0.26666, NA),
+                                `Upper 95% CI` = c(1.90819, 1.48852, 1.11060,
+                                                   1.49209, NA)
                             ))
 
 r2 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(),
-                                `Lower 95% CI` = c(),
-                                `Upper 95% CI` = c()
+                                Estimate = c(0.57804, 0.62896, 1.00288,
+                                             0.63078, -0.00491),
+                                `Lower 95% CI` = c(0.1751, 0.26577, 0.90561,
+                                                   0.26666, NA),
+                                `Upper 95% CI` = c(1.90815, 1.4885, 1.11061,
+                                                   1.49207, NA)
                            ))
+
+knitr::kable(list(r2, sas2))
+
+```
+
+#### Continous outcome and binary mediator 
+
+```{r, eval = FALSE}
+mediator(data = example250,
+         out.model = lm(y ~ x + m + c + x*m, data = example250),
+         med.model = glm(m ~ x + c, data = example250, family = "binomial"),
+         treat = "x", mediator = "m",
+         out.reg = "linear", med.reg = "logistic")
+```
+
+```{sas, eval = FALSE}
+%mediation(data = data, yvar = y, avar = x, mvar = m, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = logistic, interaction = true, casecontrol=, output=, c=, boot=, cens=);
+run;
+```
+
+```{r, echo = FALSE}
+
+sas3 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(0.23692, 0.07713, -0.00355,
+                                             0.07358, -0.048235),
+                                `Lower 95% CI` = c(-0.15452, -0.20195, -0.03535,
+                                                   -0.20750, NA),
+                                `Upper 95% CI` = c(0.62836, 0.35620, 0.02825,
+                                                   0.35466, NA)
+                            ))
+
+r3 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(0.23692, 0.07713, -0.00355,
+                                             0.07358, -0.04824),
+                                `Lower 95% CI` = c(-0.15452, -0.22195, -0.03535,
+                                                   -0.20348, NA),
+                                `Upper 95% CI` = c(0.62835, 0.37621, 0.02825,
+                                                   0.35063, NA)
+                           ))
+
+knitr::kable(list(r3, sas3))
+
+```
+
+#### Binary outcome and continuous mediator 
+
+```{r, eval = FALSE}
+mediator(data = example250,
+         out.model = glm(cens ~ x + y + c + x*y, data = example250, family = "binomial"),
+         med.model = lm(y ~ x + c, data = example250),
+         treat = "x", mediator = "y",
+         out.reg = "logistic", med.reg = "linear")
+```
+
+```{sas, eval = FALSE}
+%mediation(data = data, yvar = cens, avar = x, mvar = y, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = linear, interaction = true, casecontrol=, output=, c=, boot=, cens=);
+run;
+```
+
+```{r, echo = FALSE}
+
+sas4 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(0.42792, 0.71508, 1.06904,
+                                             0.76445, -0.20959),
+                                `Lower 95% CI` = c(0.14328, 0.20414, 0.82486,
+                                                   0.21210, NA),
+                                `Upper 95% CI` = c(1.27802, 2.50493,1.38549,
+                                                   2.75528, NA)
+                            ))
+
+r4 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
+                                       "Proportion Mediated"),
+                                Estimate = c(0.42792, 0.71508, 1.06904,
+                                             0.76445, -0.20959),
+                                `Lower 95% CI` = c(0.14331, 0.20414, 0.82487,
+                                                   0.25065, NA),
+                                `Upper 95% CI` = c(1.27772, 2.50483, 1.38549,
+                                                   2.33153, NA)
+                           ))
+
+knitr::kable(list(r4, sas4))
 
 ```
 
 ## Equations
 
-For a continuous outcome and mediator: 
-
-Models for Y (outcome) and M (mediator), correctly specified
+#### Continuous outcome and mediator 
 
 <center>
+
+Models for Y (outcome) and M (mediator), correctly specified
 
 ![](https://latex.codecogs.com/gif.latex?E%5BY%7Ca%2Cm%2Cc%5D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
 
 ![](https://latex.codecogs.com/gif.latex?E%5BM%7Ca%2Cc%5D%20%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
 
-</center>
-
 Average controlled direct effect, natural direct effect and natural indirect effect 
-
-<center>
 
 ![](https://latex.codecogs.com/gif.latex?E%5BY_%7Bam%7D%20-%20Y_%7Ba*m%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29)
 
@@ -169,13 +269,17 @@ Average controlled direct effect, natural direct effect and natural indirect eff
 
 </center>
 
-Binary outcome and continuous mediator
+#### Binary outcome and continuous mediator
 
 <center>
+
+Models for Y (outcome) and M (mediator), correctly specified
 
 ![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28Y%3D1%7Ca%2Cm%2Cc%29%5C%7D%3D%5Ctheta_%7B0%7D&plus;%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
 
 ![](https://latex.codecogs.com/gif.latex?E%5BM%7Ca%2Cc%5D%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+
+Controlled direct effect, natural direct effect and natural indiect effect on the odds ratio scale
 
 ![](https://latex.codecogs.com/gif.latex?OR%5E%7BCDE%7D%28m%29%20%3D%20exp%5C%7B%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29%5C%7D)
 
@@ -185,13 +289,17 @@ Binary outcome and continuous mediator
 
 </center>
 
-Continuous outcome and binary mediator
+#### Continuous outcome and binary mediator
 
 <center>
+
+Models for Y (outcome) and M (mediator), correctly specified
 
 ![](https://latex.codecogs.com/gif.latex?E%5BY%7Ca%2Cm%2Cc%5D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
 
 ![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28M%3D1%7Ca%2Cc%29%5C%7D%3D%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc)
+
+Average controlled direct effect, natural direct effect and natural indirect effect 
 
 ![](https://latex.codecogs.com/gif.latex?E%5BY_%7Bam%7D-Y_%7Ba%5E%7B*%7Dm%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29)
 
@@ -201,13 +309,17 @@ Continuous outcome and binary mediator
 
 </center>
 
-Binary outcome and mediator
+#### Binary outcome and mediator
 
 <center>
+
+Models for Y (outcome) and M (mediator), correctly specified
 
 ![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28Y%3D1%7Ca%2Cm%2Cc%29%5C%7D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
 
 ![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28M%3D1%7Ca%2Cc%29%5C%7D%20%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+
+Controlled direct effect, natural direct effect and natural indiect effect on the odds ratio scale
 
 ![](https://latex.codecogs.com/gif.latex?OR%5E%7BCDE%7D%28m%29%3Dexp%5B%28%5Ctheta_1%20&plus;%20%5Ctheta_3m%29%28a-a%5E*%29%5D)
 
