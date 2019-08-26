@@ -47,8 +47,7 @@ mediator <- function(data = dat,
                      a = 1,
                      a_star = 0,
                      m = 0,
-                     boot_rep = 0,
-                     interaction = TRUE, ...){
+                     boot_rep = 0, ...){
 
   # calculating covariate values to use later on
   betas <- coef(med.model) # coefficients from mediation model
@@ -243,19 +242,19 @@ mediator <- function(data = dat,
 
       ## controlled direct effect
       varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- exp(log(CDE) + c(-1, 1) * qnorm(.975) * sqrt(varCDE))
+      CI_CDE <- exp(log(CDE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varCDE)))
 
       ## natural direct effect
       varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- exp(log(NDE) + c(-1, 1) * qnorm(.975) * sqrt(varNDE))
+      CI_NDE <- exp(log(NDE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varCDE)))
 
       ## natural indirect effect
       varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- exp(log(NIE) + c(-1, 1) * qnorm(.975) * sqrt(varNIE))
+      CI_NIE <- exp(log(NIE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varCDE)))
 
       ## total effect
       varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- exp(log(TE) + c(-1, 1) * qnorm(.975) * sqrt(varTE))
+      CI_TE <- exp(log(TE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varCDE)))
 
     }
 
@@ -398,19 +397,19 @@ mediator <- function(data = dat,
 
       ## controlled direct effect
       varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- CDE + c(-1, 1) * qnorm(.975) * sqrt(varCDE) * abs(a - a_star)
+      CI_CDE <- CDE + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varCDE)) * abs(a - a_star)
 
       ## natural direct effect
       varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- NDE + c(-1, 1) * qnorm(.975) * sqrt(varNDE) * abs(a - a_star)
+      CI_NDE <- as.vector(NDE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE)) * abs(a - a_star)
 
       ## natural indirect effect
       varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- NIE + c(-1, 1) * qnorm(.975) * sqrt(varNIE)
+      CI_NIE <- NIE + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE))
 
       ## total effect
       varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- TE + c(-1, 1) * qnorm(.975) * sqrt(varTE)
+      CI_TE <- as.vector(TE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE))
     }
 
   } else if (out.reg == "logistic" & med.reg == "linear") {
@@ -518,21 +517,21 @@ mediator <- function(data = dat,
 
       ## controlled direct effect
       varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- log(CDE) + c(-1, 1) * qnorm(.975) * sqrt(varCDE) * (a - a_star)
+      CI_CDE <- log(CDE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE)) * (a - a_star)
       CI_CDE <- exp(CI_CDE)
 
       ## natural direct effect
       varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- log(NDE) + c(-1, 1) * qnorm(.975) * sqrt(varNDE) * (a - a_star)
+      CI_NDE <- log(NDE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE)) * (a - a_star)
       CI_NDE <- exp(CI_NDE)
 
       ## natural indirect effect
       varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- exp(log(NIE) + c(-1, 1) * qnorm(.975) * sqrt(varNIE) * (a - a_star))
+      CI_NIE <- exp(log(NIE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE)) * (a - a_star))
 
       ## total effect
       varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- exp(log(TE) + c(-1, 1) * qnorm(.975) * sqrt(varTE) * (a - a_star))
+      CI_TE <- exp(log(TE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE)) * (a - a_star))
 
     }
 
@@ -620,19 +619,23 @@ mediator <- function(data = dat,
 
       ## controlled direct effect
       varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- CDE + c(-1, 1) * qnorm(.975) * sqrt(varCDE) * abs(a - a_star)
+      # CI_CDE <- CDE + c(-1, 1) * qnorm(.975) * sqrt(varCDE) * abs(a - a_star)
+      CI_CDE <- CDE + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varCDE)) * abs(a - a_star)
 
       ## natural direct effect - still being problematic even without covars
       varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- NDE + c(-1, 1) * qnorm(.975) * sqrt(varNDE) * abs(a - a_star)
+      # CI_NDE <- NDE + c(-1, 1) * qnorm(.975) * sqrt(varNDE) * abs(a - a_star)
+      CI_NDE <- as.vector(NDE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNDE)) * abs(a - a_star)
 
       ## natural indirect effect
       varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- NIE + c(-1, 1) * qnorm(.975) * sqrt(varNIE) * abs(a - a_star)
+      # CI_NIE <- NIE + c(-1, 1) * qnorm(.975) * sqrt(varNIE) * abs(a - a_star)
+      CI_NIE <- NIE + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varNIE)) * abs(a - a_star)
 
       ## total effect
       varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- TE + c(-1, 1) * qnorm(.975) * sqrt(varTE) * abs(a - a_star)
+      # CI_TE <- TE + c(-1, 1) * qnorm(.975) * sqrt(varTE) * abs(a - a_star)
+      CI_TE <- as.vector(TE) + c(-1, 1) * qnorm(.975) * as.vector(sqrt(varTE)) * abs(a - a_star)
 
     }
 
