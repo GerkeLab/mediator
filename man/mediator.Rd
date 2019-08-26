@@ -8,7 +8,7 @@ mediator(data = dat, out.model = glm(cens ~ x + m + c + x * m, data =
   dat, family = "binomial"), med.model = glm(m ~ x + c, data = dat,
   family = "binomial"), treat = "x", mediator = "m",
   out.reg = "logistic", med.reg = "logistic", a = 1, a_star = 0,
-  m = 0, boot_rep = 0, ...)
+  m = 0, boot_rep = 0)
 }
 \arguments{
 \item{data}{Data set to use for analysis}
