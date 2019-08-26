@@ -50,7 +50,7 @@ Data frame containing point estimates and 95 percent CI for the
   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 }
 \description{
-The `mediatior` R function conducts mediation analysis under
+The `mediator` R function conducts mediation analysis under
 the counterfactual framework assuming interation between the exposure
 and mediator. Currently the function works for binary and continuous
 outcomes and mediators.
