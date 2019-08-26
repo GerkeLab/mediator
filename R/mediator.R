@@ -1,6 +1,6 @@
 #' Causal mediation analysis
 #'
-#' The `causal_mediation` R function conducts mediation analysis under
+#' The `mediatior` R function conducts mediation analysis under
 #' the counterfactual framework assuming interation between the exposure
 #' and mediator. Currently the function works for binary and continuous
 #' outcomes and mediators.
@@ -29,7 +29,7 @@
 #'   When `boot_rep` = 0, the Delta method for calculating confidence
 #'   intervals is used. Default = 0.
 #'
-#' @return Data frame containing point estimates and 95% CI for the
+#' @return Data frame containing point estimates and 95\% CI for the
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
 
