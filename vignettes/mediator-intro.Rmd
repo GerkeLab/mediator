@@ -57,7 +57,21 @@ In this vignette, we will :
 
 ## Usage
 
-`mediator` returns a data frame containing the point estimates and CIs for CDE, NDE, NIE and TE as well as the point estimates for the PM. The function assumes appropriate modeling on the part of the user and allows (but does not require) interaction between the exposure and the mediator. 
+`mediator` returns a data frame containing the point estimates and CIs for CDE, NDE, NIE and TE as well as the point estimates for the PM. The function assumes appropriate modeling (for the outcome and mediator models) on the part of the user and allows (but does not require) interaction between the exposure and the mediator. A basic example of function is shown below:
+
+```{r, eval = FALSE}
+mediator(data=example250,
+         out.model = lm(y ~ x + c + m + x*c, data = example250),
+         med.model = lm(c ~ x + m, data = example250),
+         treat = "x", mediator = "c",
+         out.reg = "linear", med.reg = "linear",
+         a = 1, a_star = 0,
+         m = 0,
+         boot_rep = 0)
+```
+
+Setting `boot_rep = 0`, tells the function to use the Delta method for calculating confidence intervals. `a` and `a_star` represent the level of exposure and its comparison level, which for binary exposures are often 1 and 0, but can be set at any pair of numeric values. In the above example, `a`, `a_star`, `m` and `boot_rep` are all set to their default values. 
+
 
 ## mediator vs %mediation
 
@@ -69,7 +83,20 @@ The `%mediation` takes roughly 7.05 seconds to run, calculating the CI using the
 
 When using bootstrapping, `%mediation` bootstraps both the effect estimates and CI, while the R function `mediator` only uses the bootstrap for obtaining the CI. Users should use the bootstrap function with caution, especially when using small datasets. We recommend using a minimum 10000 replicates. Using more replicates will take more time, however it will provide more precise estimates. This is especially important when using small datasets, as using a small number of replicated could make the CI wonky. 
 
-Below are examples of results from `mediator` and `%mediation` for comparison. 
+Below are examples of results from `mediator` (left) and `%mediation` (right) for comparison. 
+
+```{r, eval = FALSE}
+mediator(data=example250,
+         out.model = lm(y ~ x + c + m + x*c, data = example250),
+         med.model = lm(c ~ x + m, data = example250),
+         treat = "x", mediator = "c",
+         out.reg = "linear", med.reg = "linear")
+```
+
+```{sas, eval = FALSE}
+%mediation(data = example250, yvar = y, avar = x, mvar = c, cvar = m, a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = linear, interaction = true, casecontrol =, output =, c =, boot =, cens=);
+run;
+```
 
 ```{r, echo = FALSE}
 
@@ -93,7 +120,8 @@ r1 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                                    0.33748, NA)
                            ))
 
-knitr::kable(list(r1, sas1), caption = c("mediator","mediation"))
+knitr::kable(list(r1, sas1))
+
 
 ```
 
