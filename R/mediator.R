@@ -50,7 +50,7 @@ mediator <- function(data = dat,
                      boot_rep = 0){
 
   # calculating covariate values to use later on
-  betas <- coef(med.model) # coefficients from mediation model
+  betas <- stats::coef(med.model) # coefficients from mediation model
   cmeans <- apply(data, 2, function(x) mean(as.numeric(x), na.rm = TRUE)) # mean value for all values
   betameans <- cmeans[which(names(cmeans) %in%
                               names(betas)[!(names(betas) %in%
@@ -80,7 +80,7 @@ mediator <- function(data = dat,
                  cbind(matrix(0, ncol = ncol(SigmaB), nrow = nrow(SigmaT)), SigmaT))
   # Sigma includes standard error only for logistic/linear and no others
   if (out.reg == "logistic" & med.reg == "linear") {
-     sigmaV <- sigma(med.model)^2
+     sigmaV <- stats::sigma(med.model)^2
      Sigma <- rbind(cbind(Sigma, rep(0, nrow(Sigma))),
                     c(rep(0, ncol(Sigma)), sigmaV))
 
@@ -666,7 +666,7 @@ mediator <- function(data = dat,
         med <- stats::update(med.model, data = d)
 
         # calculating covariate values to use later on
-        betas <- coef(med) # coefficients from mediation model
+        betas <- stats::coef(med) # coefficients from mediation model
         cmeans <- apply(d, 2, function(x) mean(as.numeric(x), na.rm = TRUE)) # mean value for all values
         betameans <- cmeans[which(names(cmeans) %in%
                                     names(betas)[!(names(betas) %in%
