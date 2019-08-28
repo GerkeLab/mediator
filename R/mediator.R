@@ -33,15 +33,11 @@
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
 #' @export
-mediator <- function(data = dat,
-                     out.model = glm(cens ~ x + m + c + x*m,
-                                     data = dat,
-                                     family = "binomial"),
-                     med.model = glm(m ~ x + c,
-                                     data = dat,
-                                     family = "binomial"),
-                     treat = "x",
-                     mediator = "m",
+mediator <- function(data,
+                     out.model,
+                     med.model,
+                     treat,
+                     mediator,
                      out.reg = "logistic",
                      med.reg = "logistic",
                      a = 1,
