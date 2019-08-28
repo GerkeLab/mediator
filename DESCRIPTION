@@ -1,9 +1,11 @@
 Package: mediator
-Title: Causal medaition analysis
+Title: Causal mediation analysis
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Jordan", "Creed", email = "jordan.h.creed@moffitt.org", 
         role = c("cre","aut")), 
+      person("Garrick", "Aden-Buie", email = "garrick.aden-buie@moffitt.org",
+        role = "ctb"),  
       person("Travis", "Gerke", email = "travis.gerke@moffitt.org",
         role = "aut"))
 Description: Performs causal mediation analysis to estimate controlled,
