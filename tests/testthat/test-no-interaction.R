@@ -9,6 +9,10 @@ a = 1
 a_star = 0
 m = 0
 
+# PM equations checked --------------------------------------------------------
+
+PM_check <- FALSE
+
 # performing tests ------------------------------------------------------------
 
 test_that("continuous outcome and mediator match SAS macro",{
@@ -40,7 +44,7 @@ test_that("continuous outcome and mediator match SAS macro",{
   SigmaB <- vcov(med.model)
   SigmaT <- vcov(out.model)
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+    SigmaT <- suppressWarnings(rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT))))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
   } else {
@@ -84,6 +88,7 @@ test_that("continuous outcome and mediator match SAS macro",{
   expect_equal(round(as.numeric(TE), 6), 0.071753)
 
   ## proportion mediated
+  if(PM_check==FALSE){skip("PM results not validated")}
   PM <- NIE / TE
   expect_equal(round(as.numeric(PM), 5), 0.49434)
 
@@ -118,7 +123,7 @@ test_that("binary outcome and continuous mediator match SAS macro",{
   SigmaB <- vcov(med.model)
   SigmaT <- vcov(out.model)
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+    SigmaT <- suppressWarnings(rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT))))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
   } else {
@@ -175,6 +180,7 @@ test_that("binary outcome and continuous mediator match SAS macro",{
   expect_equal(round(as.numeric(TE), 5), 0.63825, tolerance = 0.00001)
 
   ## proportion mediated
+  if(PM_check==FALSE){skip("PM results not validated")}
   PM <- (NDE * (NIE - 1)) / (NDE * NIE - 1)
   expect_equal(round(as.numeric(PM), 5), 0.37420, tolerance = 0.00001)
 
@@ -209,7 +215,7 @@ test_that("continuous outcome and binary mediator match SAS macro",{
   SigmaB <- vcov(med.model)
   SigmaT <- vcov(out.model)
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+    SigmaT <- suppressWarnings(rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT))))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
   } else {
@@ -270,6 +276,7 @@ test_that("continuous outcome and binary mediator match SAS macro",{
   expect_equal(round(as.numeric(TE), 6), 0.071753)
 
   ## proportion mediated
+  if(PM_check==FALSE){skip("PM results not validated")}
   PM <- NIE / TE
   expect_equal(round(as.numeric(PM), 5), 0.54739)
 })
@@ -303,7 +310,7 @@ test_that("binary outcome and mediator match SAS macro",{
   SigmaB <- vcov(med.model)
   SigmaT <- vcov(out.model)
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+    SigmaT <- suppressWarnings(rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT))))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
   } else {
