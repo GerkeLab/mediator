@@ -47,7 +47,10 @@ mediator <- function(data,
 
   # calculating covariate values to use later on
   betas <- stats::coef(med.model) # coefficients from mediation model
-  cmeans <- apply(data, 2, function(x) mean(as.numeric(x), na.rm = TRUE)) # mean value for all values
+  cmeans <- data %>%
+    dplyr::select_if(is.numeric) %>%
+    purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
+  # can do similar for categorical here by mode?
   betameans <- cmeans[which(names(cmeans) %in%
                               names(betas)[!(names(betas) %in%
                                                c("(Intercept)", treat))])] # subset to only covariates
