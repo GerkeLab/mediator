@@ -7,7 +7,7 @@
 #'
 #' @param data Data set to use for analysis
 #' @param out.model A fitted model object for the outcome.
-#'   Can be of class 'glm','lm'.
+#'   Can be of class 'glm','lm', or 'coxph'.
 #' @param med.model A fitted model object for the mediator.
 #'   Can be of class 'glm','lm'.
 #' @param treat A character string indicating the name of the
@@ -15,8 +15,8 @@
 #' @param mediator A character string indicating the name of the
 #'   mediator variable used.
 #' @param out.reg A character string indicating the type of
-#'   regression used in the outcome model. Can be either "logisitic" or
-#'   "linear".
+#'   regression used in the outcome model. Can be either "logisitic",
+#'   "linear", or "coxph".
 #' @param med.reg A character string indicating the type of
 #'   regression used in the mediator model. Can be either "logisitic" or
 #'   "linear".
@@ -67,6 +67,10 @@ mediator <- function(data,
     SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
+  } else if (out.reg=="coxph") {
+    SigmaT <- rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT)))
+    dimnames(SigmaT)[[1]][nrow(SigmaT)] <- "(Intercept)"
+    dimnames(SigmaT)[[2]][1] <- "(Intercept)"
   } else {
     SigmaT <- SigmaT
   }
@@ -75,11 +79,10 @@ mediator <- function(data,
   Sigma <- rbind(cbind(SigmaB, matrix(0, ncol = ncol(SigmaT), nrow = nrow(SigmaB))),
                  cbind(matrix(0, ncol = ncol(SigmaB), nrow = nrow(SigmaT)), SigmaT))
   # Sigma includes standard error only for logistic/linear and no others
-  if (out.reg == "logistic" & med.reg == "linear") {
+  if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
      sigmaV <- stats::sigma(med.model)^2
      Sigma <- rbind(cbind(Sigma, rep(0, nrow(Sigma))),
                     c(rep(0, ncol(Sigma)), sigmaV))
-
   } else {
      Sigma <- Sigma
   }
@@ -97,7 +100,7 @@ mediator <- function(data,
   ##### ----------------------------------------------------------------- #####
   # Calculate effect estimates and confidence intervals (delta method) --------
   ##### ----------------------------------------------------------------- #####
-  if (out.reg == "logistic" & med.reg == "logistic") {
+  if (out.reg %in% c("logistic","coxph") & med.reg == "logistic") {
 
     # calculate effect estimates
     ## controlled direct effect
@@ -416,7 +419,7 @@ mediator <- function(data,
         as.vector(sqrt(varTE))
     }
 
-  } else if (out.reg == "logistic" & med.reg == "linear") {
+  } else if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
 
     # calculate effect estimates
 

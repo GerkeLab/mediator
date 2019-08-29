@@ -12,7 +12,7 @@ mediator(data, out.model, med.model, treat, mediator,
 \item{data}{Data set to use for analysis}
 
 \item{out.model}{A fitted model object for the outcome.
-Can be of class 'glm','lm'.}
+Can be of class 'glm','lm', or 'coxph'.}
 
 \item{med.model}{A fitted model object for the mediator.
 Can be of class 'glm','lm'.}
@@ -24,8 +24,8 @@ treatment/exposure variable used.}
 mediator variable used.}
 
 \item{out.reg}{A character string indicating the type of
-regression used in the outcome model. Can be either "logisitic" or
-"linear".}
+regression used in the outcome model. Can be either "logisitic",
+"linear", or "coxph".}
 
 \item{med.reg}{A character string indicating the type of
 regression used in the mediator model. Can be either "logisitic" or
