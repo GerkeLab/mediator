@@ -48,7 +48,7 @@ mediator <- function(data,
   # subset data to the set of variables from data which are relevant
   var_set <- unique(c(names(attr(out.model$terms,"dataClasses")),
                       names(attr(med.model$terms,"dataClasses"))))
-  data <- data %>% select(var_set)
+  data <- data %>% dplyr::select(var_set)
 
   # calculate mean of numeric values, mode of characters/factors
   cmeans <- data %>%
