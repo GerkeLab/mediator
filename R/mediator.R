@@ -45,12 +45,23 @@ mediator <- function(data,
                      m = 0,
                      boot_rep = 0){
 
-  # calculating covariate values to use later on
-  betas <- stats::coef(med.model) # coefficients from mediation model
+  # subset data to the set of variables from data which are relevant
+  var_set <- unique(c(names(attr(out.model$terms,"dataClasses")),
+                      names(attr(med.model$terms,"dataClasses"))))
+  data <- data %>% select(var_set)
+
+  # calculate mean of numeric values, mode of characters/factors
   cmeans <- data %>%
     dplyr::select_if(is.numeric) %>%
     purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
-  # can do similar for categorical here by mode?
+  cmodes <- data %>%
+    dplyr::select_if(purrr::negate(is.numeric)) %>%
+    purrr::map_chr(~{
+      ux <- unique(.x)
+      ux[which.max(tabulate(match(.x, ux)))]
+      })
+
+  betas <- stats::coef(med.model) # coefficients from mediation model
   betameans <- cmeans[which(names(cmeans) %in%
                               names(betas)[!(names(betas) %in%
                                                c("(Intercept)", treat))])] # subset to only covariates
