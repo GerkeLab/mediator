@@ -16,7 +16,9 @@ LazyData: true
 Imports: 
     boot,
     stats,
-    magrittr
+    magrittr,
+    dplyr,
+    purrr
 RoxygenNote: 6.1.1
 Depends: R (>= 2.10)
 Suggests: 
