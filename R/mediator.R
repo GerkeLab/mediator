@@ -115,6 +115,14 @@ mediator <- function(data,
       out.model$coefficients[paste0(treat, ":", mediator)]
   }
 
+  # pulling coefficients from models
+  theta1 <- out.model$coefficients[treat]
+  theta2 <- out.model$coefficients[mediator]
+  theta3 <- out.model$coefficients[paste0(treat, ":", mediator)]
+
+  beta0 <- med.model$coefficients["(Intercept)"]
+  beta1 <- med.model$coefficients[treat]
+
   ##### ----------------------------------------------------------------- #####
   # Calculate effect estimates and confidence intervals (delta method) --------
   ##### ----------------------------------------------------------------- #####
@@ -122,36 +130,17 @@ mediator <- function(data,
 
     # calculate effect estimates
     ## controlled direct effect
-    CDE <- as.numeric(out.model$coefficients[treat] * (a - a_star) +
-                        out.model$coefficients[paste0(treat, ":", mediator)] * m *
-                        (a - a_star))
+    CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
     CDE <- exp(CDE)
     ## natural direct effect
-    NDEnum <- exp(out.model$coefficients[treat] * a) *
-      (1 + exp(out.model$coefficients[mediator] +
-                 out.model$coefficients[paste0(treat, ":", mediator)] *
-                 a + med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a_star + betasum))
-    NDEden <- exp(out.model$coefficients[treat] * a_star) *
-      (1 + exp(out.model$coefficients[mediator] +
-                 out.model$coefficients[paste0(treat, ":", mediator)] *
-                 a_star + med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a_star + betasum))
+    NDEnum <- exp(theta1 * a) * (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
+    NDEden <- exp(theta1 * a_star) * (1 + exp(theta2 + theta3 * a_star + beta0 + beta1 * a_star + betasum))
     NDE <- NDEnum / NDEden
     rm(NDEnum, NDEden)
     ## natural indirect effect
-    NIEnum <- (1 + exp(med.model$coefficients["(Intercept)"] +
-                         med.model$coefficients[treat] * a_star + betasum)) *
-      (1 + exp(out.model$coefficients[mediator] +
-                 out.model$coefficients[paste0(treat, ":", mediator)] *
-                 a + med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a + betasum))
-    NIEden <- (1 + exp(med.model$coefficients["(Intercept)"] +
-                         med.model$coefficients[treat] * a + betasum)) *
-      (1 + exp(out.model$coefficients[mediator] +
-                 out.model$coefficients[paste0(treat, ":", mediator)] *
-                 a + med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a_star + betasum))
+    NIEnum <- (1 + exp(beta0 + beta1 * a_star + betasum)) * (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a + betasum))
+    NIEden <- (1 + exp(beta0 + beta1 * a + betasum)) *
+      (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
     NIE <- as.vector(NIEnum / NIEden)
     rm(NIEnum, NIEden)
     ## total effect
@@ -171,22 +160,10 @@ mediator <- function(data,
                 if (length(betameans)) rep(0, length(betameans)) else NA)
       gCDE <- gCDE[!is.na(gCDE)]
       ## natural direct effect
-      A <- (exp(out.model$coefficients[mediator] +
-                  out.model$coefficients[paste0(treat, ":", mediator)] *
-                  a + med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a_star + betasum)) /
-        (1 + exp(out.model$coefficients[mediator] +
-                   out.model$coefficients[paste0(treat, ":", mediator)] *
-                   a + med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum))
-      B <- (exp(out.model$coefficients[mediator] +
-                  out.model$coefficients[paste0(treat, ":", mediator)] *
-                  a_star + med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a_star + betasum)) /
-        (1 + exp(out.model$coefficients[mediator] +
-                   out.model$coefficients[paste0(treat, ":", mediator)] *
-                   a_star + med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum))
+      A <- (exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum)) /
+        (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
+      B <- (exp(theta2 + theta3 * a_star + beta0 + beta1 * a_star + betasum)) /
+        (1 + exp(theta2 + theta3 * a_star + beta0 + beta1 * a_star + betasum))
       # A_total <- (exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a_star + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))/
       #   (1 + exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a_star + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))
       # B_total <- (exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))/
@@ -212,33 +189,17 @@ mediator <- function(data,
       # gNDE_pure <- gNDE_pure[!is.na(gNDE_pure)]
       rm(A, B)
       ## natural indirect effect
-      A <- (exp(out.model$coefficients[mediator] +
-                  out.model$coefficients[paste0(treat, ":", mediator)] *
-                  a + med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a + betasum)) /
-        (1 + exp(out.model$coefficients[mediator] +
-                   out.model$coefficients[paste0(treat, ":", mediator)] *
-                   a + med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a + betasum))
+      A <- (exp(theta2 + theta3 * a + beta0 + beta1 * a + betasum)) /
+        (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a + betasum))
 
-      B <- (exp(out.model$coefficients[mediator] +
-                  out.model$coefficients[paste0(treat, ":", mediator)] *
-                  a + med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a_star + betasum)) /
-        (1 + exp(out.model$coefficients[mediator] +
-                   out.model$coefficients[paste0(treat, ":", mediator)] *
-                   a + med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum))
+      B <- (exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum)) /
+        (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
 
-      K <- (exp(med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a + betasum)) /
-        (1 + exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a + betasum))
+      K <- (exp(beta0 + beta1 * a + betasum)) /
+        (1 + exp(beta0 + beta1 * a + betasum))
 
-      D <- (exp(med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a_star + betasum)) /
-        (1 + exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum))
+      D <- (exp(beta0 + beta1 * a_star + betasum)) /
+        (1 + exp(beta0 + beta1 * a_star + betasum))
 
       gNIE <- c((D + A) - (K + B),
                 a_star * (D - B) + a * (A - K),
@@ -284,31 +245,15 @@ mediator <- function(data,
     # calculate effect estimates
 
     ## controlled direct effect
-    CDE <-  as.numeric(out.model$coefficients[treat] * (a - a_star) +
-                         out.model$coefficients[paste0(treat, ":", mediator)] *
-                         m * (a - a_star))
+    CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
     ## natural direct effect
-    NDE <- out.model$coefficients[treat] * (a - a_star) +
-             (out.model$coefficients[paste0(treat, ":", mediator)] *
-                (a - a_star)) * ((exp(med.model$coefficients["(Intercept)"] +
-                                        med.model$coefficients[treat] *
-                                        a_star + betasum)) /
-                                   (1 + exp(med.model$coefficients["(Intercept)"] +
-                                              med.model$coefficients[treat] *
-                                              a_star + betasum)))
+    NDE <- theta1 * (a - a_star) + (theta3 * (a - a_star)) * ((exp(beta0 + beta1 * a_star + betasum)) /
+                                                                (1 + exp(beta0 + beta1 * a_star + betasum)))
 
     ## natural indirect effect
-    NIE <- (out.model$coefficients[mediator] +
-              out.model$coefficients[paste0(treat, ":", mediator)] * a) *
-      ((exp(med.model$coefficients["(Intercept)"] +
-              med.model$coefficients[treat] * a + betasum) /
-          (1 + exp(med.model$coefficients["(Intercept)"] +
-                     med.model$coefficients[treat] * a + betasum))) -
-         (exp(med.model$coefficients["(Intercept)"] +
-                med.model$coefficients[treat] * a_star + betasum) /
-            (1 + exp(med.model$coefficients["(Intercept)"] +
-                       med.model$coefficients[treat] * a_star + betasum))))
+    NIE <- (theta2 + theta3 * a) * ((exp(beta0 + beta1 * a + betasum) / (1 + exp(beta0 + beta1 * a + betasum))) -
+         (exp(beta0 + beta1 * a_star + betasum) / (1 + exp(beta0 + beta1 * a_star + betasum))))
 
     ## total effect
     TE <- NDE + NIE
@@ -328,15 +273,10 @@ mediator <- function(data,
       gCDE <- gCDE[!is.na(gCDE)]
 
       ## natural direct effect
-      dex <- exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum)
-      d1 <- (out.model$coefficients[paste0(treat, ":", mediator)] * dex *
-               (1 + dex) - out.model$coefficients[paste0(treat, ":", mediator)] *
-               (dex^2)) / ((1 + dex)^2)
-      d2 <- (out.model$coefficients[paste0(treat, ":", mediator)] *
-               a_star * dex * (1 + dex) - dex^2) / ((1 + dex)^2)
-      d3 <- if (length(betameans)) (out.model$coefficients[paste0(treat, ":", mediator)] *
-                      t(betameans) * dex * (1 + dex) - dex^2) /
+      dex <- exp(beta0 + beta1 * a_star + betasum)
+      d1 <- (theta3 * dex * (1 + dex) - theta3 * (dex^2)) / ((1 + dex)^2)
+      d2 <- (theta3 * a_star * dex * (1 + dex) - dex^2) / ((1 + dex)^2)
+      d3 <- if (length(betameans)) (theta3 * t(betameans) * dex * (1 + dex) - dex^2) /
                      ((1 + dex)^2) else NA
       d7 <- dex / (1 + dex)
 
@@ -351,40 +291,19 @@ mediator <- function(data,
       rm(d1, d2, d3, d7)
 
       ## natural indirect effect
-      Q <- ((exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a + betasum) *
-               (1 + exp(med.model$coefficients["(Intercept)"] +
-                          med.model$coefficients[treat] * a + betasum))) -
-              ((exp(med.model$coefficients["(Intercept)"] +
-                      med.model$coefficients[treat] * a + betasum))^2)) /
-        ((1 + exp(med.model$coefficients["(Intercept)"] +
-                    med.model$coefficients[treat] * a + betasum))^2)
-      B <- ((exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum) *
-               (1 + exp(med.model$coefficients["(Intercept)"] +
-                          med.model$coefficients[treat] * a_star + betasum))) -
-              ((exp(med.model$coefficients["(Intercept)"] +
-                      med.model$coefficients[treat] * a_star + betasum))^2)) /
-        ((1 + exp(med.model$coefficients["(Intercept)"] +
-                    med.model$coefficients[treat] * a_star + betasum))^2)
-      K <- exp(med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a + betasum) /
-        (1 + exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a + betasum))
-      D <- exp(med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a_star + betasum) /
-        (1 + exp(med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] * a_star + betasum))
+      Q <- ((exp(beta0 + beta1 * a + betasum) * (1 + exp(beta0 + beta1 * a + betasum))) - ((exp(beta0 + beta1 * a + betasum))^2)) /
+        ((1 + exp(beta0 + beta1 * a + betasum))^2)
+      B <- ((exp(beta0 + beta1 * a_star + betasum) * (1 + exp(beta0 + beta1 * a_star + betasum))) -
+              ((exp(beta0 + beta1 * a_star + betasum))^2)) /
+        ((1 + exp(beta0 + beta1 * a_star + betasum))^2)
+      K <- exp(beta0 + beta1 * a + betasum) /
+        (1 + exp(beta0 + beta1 * a + betasum))
+      D <- exp(beta0 + beta1 * a_star + betasum) /
+        (1 + exp(beta0 + beta1 * a_star + betasum))
 
-      gNIE <- c((out.model$coefficients[mediator] +
-                   out.model$coefficients[paste0(treat, ":", mediator)] * a) *
-                  (Q - B),
-                (out.model$coefficients[mediator] +
-                   out.model$coefficients[paste0(treat, ":", mediator)] * a) *
-                  (a * Q - a_star * B),
-                if (length(betameans)) (out.model$coefficients[mediator] +
-                          out.model$coefficients[paste0(treat, ":", mediator)] *
-                          a) * t(betameans) * (Q - B) else NA,
+      gNIE <- c((theta2 + theta3 * a) * (Q - B),
+                (theta2 + theta3 * a) * (a * Q - a_star * B),
+                if (length(betameans)) (theta2 + theta3 * a) * t(betameans) * (Q - B) else NA,
                 0, 0,
                 K - D,
                 a * (K - D),
@@ -392,16 +311,9 @@ mediator <- function(data,
       gNIE <- gNIE[!is.na(gNIE)]
 
       ## total effect - exchange A for Q 07/01/2019
-      gTE <- c(out.model$coefficients[paste0(treat, ":", mediator)] * (a - a_star) * B + (out.model$coefficients[mediator] + out.model$coefficients[paste0(treat, ":", mediator)] * a) * (Q - B),
-               a_star * out.model$coefficients[paste0(treat, ":", mediator)] *
-                 (a - a_star) * B + (out.model$coefficients[mediator] +
-                                       out.model$coefficients[paste0(treat, ":", mediator)] *
-                                       a) * (a * Q - a_star * B),
-               if (length(betameans)) t(betameans) *
-                 out.model$coefficients[paste0(treat, ":", mediator)] *
-                 (a - a_star) * B + (out.model$coefficients[mediator] +
-                 out.model$coefficients[paste0(treat, ":", mediator)] * a) *
-                 (Q - B) else NA, # problem child
+      gTE <- c(theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (Q - B),
+               a_star * theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (a * Q - a_star * B),
+               if (length(betameans)) t(betameans) * theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (Q - B) else NA, # problem child
                0,
                a - a_star,
                K - D,
@@ -437,26 +349,15 @@ mediator <- function(data,
     # calculate effect estimates
 
     ## controlled direct effect
-    CDE <-  as.numeric(out.model$coefficients[treat] * (a - a_star) +
-                         out.model$coefficients[paste0(treat, ":", mediator)] *
-                         m * (a - a_star))
+    CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
     CDE <- exp(CDE)
 
     ## natural direct effect
-    NDE <- (out.model$coefficients[treat] +
-              out.model$coefficients[paste0(treat, ":", mediator)] *
-              (med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * a_star + betasum +
-                 (out.model$coefficients[mediator] * sigmaV))) *
-      (a - a_star) + (0.5 * (out.model$coefficients[paste0(treat, ":", mediator)]^2) *
-                        sigmaV) * (a^2 - a_star^2)
+    NDE <- (theta1 + theta3 * (beta0 + beta1 * a_star + betasum + (theta2 * sigmaV))) * (a - a_star) + (0.5 * (theta3^2) * sigmaV) * (a^2 - a_star^2)
     NDE <- exp(NDE)
 
     ## natural indirect effect
-    NIE <- (out.model$coefficients[mediator] *
-              med.model$coefficients[treat] +
-              out.model$coefficients[paste0(treat, ":", mediator)] *
-              med.model$coefficients[treat] * a) * (a - a_star)
+    NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
     NIE <- exp(NIE)
 
     ## total effect
@@ -474,54 +375,36 @@ mediator <- function(data,
                 0)
       gCDE <- gCDE[!is.na(gCDE)]
       ## natural direct effect
-      gNDE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
-                out.model$coefficients[paste0(treat, ":", mediator)] *
-                  a_star,
-                if (length(betameans)) out.model$coefficients[paste0(treat, ":", mediator)] *
-                         t(betameans) else NA, # problem child
+      gNDE <- c(theta3,
+                theta3 * a_star,
+                if (length(betameans)) theta3 * t(betameans) else NA, # problem child
                 0, 1,
-                out.model$coefficients[paste0(treat, ":", mediator)] * sigmaV,
-                (med.model$coefficients["(Intercept)"] +
-                   med.model$coefficients[treat] *
-                   a_star + betasum + out.model$coefficients[mediator] *
-                   sigmaV + out.model$coefficients[paste0(treat, ":", mediator)] *
-                   sigmaV * (a + a_star)), # C = c?
+                theta3 * sigmaV,
+                (beta0 + beta1 * a_star + betasum + theta2 * sigmaV + theta3 * sigmaV * (a + a_star)), # C = c?
                 if (length(betameans)) rep(0, length(betameans)) else NA,
-                out.model$coefficients[paste0(treat, ":", mediator)] *
-                  out.model$coefficients[mediator] + 0.5 *
-                  (out.model$coefficients[paste0(treat, ":", mediator)]^2) *
-                  (a + a_star))
+                theta3 * theta2 + 0.5 * (theta3^2) * (a + a_star))
       gNDE <- gNDE[!is.na(gNDE)]
 
       ## natural indirect effect
       gNIE <- c(0,
-                out.model$coefficients[mediator] +
-                  out.model$coefficients[paste0(treat, ":", mediator)] * a,
+                theta2 + theta3 * a,
                 if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 0,
-                med.model$coefficients[treat],
-                med.model$coefficients[treat] * a,
+                beta1,
+                beta1 * a,
                 if (length(betameans)) rep(0, length(betameans)) else NA,
                 0)
       gNIE <- gNIE[!is.na(gNIE)]
 
       ## total effect
-      gTE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-                 (a + a_star) + out.model$coefficients[mediator],
-               if (length(betameans)) out.model$coefficients[paste0(treat, ":", mediator)] *
-                        t(betameans) else NA, # problem child
+      gTE <- c(theta3,
+               theta3 * (a + a_star) + theta2,
+               if (length(betameans)) theta3 * t(betameans) else NA, # problem child
                0, 1,
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-                 sigmaV + med.model$coefficients[treat],
-               med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * (a + a_star) + betasum +
-                 out.model$coefficients[mediator] * sigmaV +
-                 out.model$coefficients[paste0(treat, ":", mediator)] *
-                 sigmaV * (a^2 - a_star^2),
+               theta3 * sigmaV + beta1,
+               beta0 + beta1 * (a + a_star) + betasum + theta2 * sigmaV + theta3 * sigmaV * (a^2 - a_star^2),
                if (length(betameans)) rep(0, length(betameans)) else NA,
-               0.5 * (out.model$coefficients[paste0(treat, ":", mediator)]^2) *
-                 (a^2 - a_star^2))
+               0.5 * (theta3^2) * (a^2 - a_star^2))
       gTE <- gTE[!is.na(gTE)]
 
       # calculate CI using delta method
@@ -555,23 +438,13 @@ mediator <- function(data,
     # calculate effect estimates
 
     ## controlled direct effect
-    CDE <- as.numeric(out.model$coefficients[treat] * (a - a_star) +
-                        out.model$coefficients[paste0(treat, ":", mediator)] *
-                        m * (a - a_star))
+    CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
     ## natural direct effect
-    NDE <- (out.model$coefficients[treat] +
-              out.model$coefficients[paste0(treat, ":", mediator)] *
-              med.model$coefficients["(Intercept)"] +
-              out.model$coefficients[paste0(treat, ":", mediator)] *
-              med.model$coefficients[treat] * a_star +
-              out.model$coefficients[paste0(treat, ":", mediator)] * betasum) *
-      (a - a_star)
+    NDE <- (theta1 + theta3 * beta0 + theta3 * beta1 * a_star + theta3 * betasum) * (a - a_star)
 
     ## natural indirect effect
-    NIE <- (out.model$coefficients[mediator] * med.model$coefficients[treat] +
-              out.model$coefficients[paste0(treat, ":", mediator)] *
-              med.model$coefficients[treat] * a) * (a - a_star)
+    NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
 
     ## total effect
     TE <- NDE + NIE
@@ -591,38 +464,32 @@ mediator <- function(data,
       gCDE <- gCDE[!is.na(gCDE)]
 
       ## natural direct effect
-      gNDE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
-                out.model$coefficients[paste0(treat, ":", mediator)] * a_star,
-                if (length(betameans)) t(out.model$coefficients[paste0(treat, ":", mediator)] *
-                           t(betameans)) else NA, # problem child
+      gNDE <- c(theta3,
+                theta3 * a_star,
+                if (length(betameans)) t(theta3 * t(betameans)) else NA, # problem child
                 0, 1, 0,
-                med.model$coefficients["(Intercept)"] +
-                  med.model$coefficients[treat] * a_star + betasum,
+                beta0 + beta1 * a_star + betasum,
                 if (length(betameans)) rep(0, length(betameans)) else NA)
       gNDE <- gNDE[!is.na(gNDE)]
 
       ## pure natural indirect effect
       ### for total NIE - substitute a and a*
       gNIE <- c(0,
-                out.model$coefficients[mediator] +
-                  out.model$coefficients[paste0(treat, ":", mediator)] * a_star,
+                theta2 + theta3 * a_star,
                 if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 0,
-                med.model$coefficients[treat],
-                med.model$coefficients[treat] * a_star,
+                beta1,
+                beta1 * a_star,
                 if (length(betameans)) rep(0, length(betameans)) else NA)
       gNIE <- gNIE[!is.na(gNIE)]
 
       ## total effects
-      gTE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-                 (a + a_star) + out.model$coefficients[mediator],
-               if (length(betameans)) out.model$coefficients[paste0(treat, ":", mediator)] %*%
-                        t(betameans) else NA, # problem child : c' and C' = ?
+      gTE <- c(theta3,
+               theta3 * (a + a_star) + theta2,
+               if (length(betameans)) theta3 %*% t(betameans) else NA, # problem child : c' and C' = ?
                0, 1,
-               med.model$coefficients[treat],
-               med.model$coefficients["(Intercept)"] +
-                 med.model$coefficients[treat] * (a + a_star) + betasum,
+               beta1,
+               beta0 + beta1 * (a + a_star) + betasum,
                if (length(betameans)) rep(0, length(betameans)) else NA)
       gTE <- gTE[!is.na(gTE)]
 
@@ -664,91 +531,107 @@ mediator <- function(data,
         out <- stats::update(out.model, data = d)
         med <- stats::update(med.model, data = d)
 
-        # calculating covariate values to use later on
-        betas <- stats::coef(med) # coefficients from mediation model
-        cmeans <- apply(d, 2, function(x) mean(as.numeric(x), na.rm = TRUE)) # mean value for all values
-        betameans <- cmeans[which(names(cmeans) %in%
-                                    names(betas)[!(names(betas) %in%
-                                                     c("(Intercept)", treat))])] # subset to only covariates
-        betameans <- betameans[match(names(betas)[!(names(betas) %in%
-                                                      c("(Intercept)", treat))],
-                                     names(betameans))] # put in order to match coefficients
-        betasum <- betameans %*% betas[names(betas)[!(names(betas) %in%
-                                                        c("(Intercept)", treat))]] # mean * coefficient from model
+        cmeans <- d %>%
+          dplyr::select_if(is.numeric) %>%
+          purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
+        cmodes <- d %>%
+          dplyr::select_if(purrr::negate(is.numeric)) %>%
+          purrr::map_chr(~{
+            ux <- unique(.x)
+            ux[which.max(tabulate(match(.x, ux)))]
+          })
 
-        # get covariate names
-        covmeans <- cmeans[which(names(cmeans) %in%
-                                   names(betas)[!(names(betas) %in%
-                                                    c("(Intercept)", treat))])]
-        cnames <- names(covmeans)
+        betas <- stats::coef(med) # coefficients from mediation model
+        beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med, d)
+        betasum <- sum(beta_info$betasum, na.rm=TRUE)
+        betameans <- beta_info$betamean
+        cnames <- names(betameans)
 
         # Covariance matrix for standar errors
         SigmaB <- stats::vcov(med)
         SigmaT <- stats::vcov(out)
-        SigmaT <- SigmaT[c("(Intercept)", treat, mediator,
-                           paste0(treat, ":", mediator), cnames),
-                         c("(Intercept)", treat, mediator,
-                           paste0(treat, ":", mediator), cnames)]
-
-        Sigma <- rbind(cbind(SigmaB, matrix(0, ncol = ncol(SigmaT),
-                                            nrow = nrow(SigmaB))),
-                       cbind(matrix(0, ncol = ncol(SigmaB),
-                                    nrow = nrow(SigmaT)), SigmaT))
-
+        # including 0 for variance for interaction if missing
+        if(is.na(out$coefficients[paste0(treat, ":", mediator)])){
+          SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+          dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
+          dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
+        } else if (out.reg == "coxph") {
+          SigmaT <- rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT)))
+          dimnames(SigmaT)[[1]][nrow(SigmaT)] <- "(Intercept)"
+          dimnames(SigmaT)[[2]][1] <- "(Intercept)"
+        } else {
+          SigmaT <- SigmaT
+        }
+        SigmaT <- SigmaT[c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames),
+                         c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames)]
+        Sigma <- rbind(cbind(SigmaB, matrix(0, ncol = ncol(SigmaT), nrow = nrow(SigmaB))),
+                       cbind(matrix(0, ncol = ncol(SigmaB), nrow = nrow(SigmaT)), SigmaT))
         # Sigma includes standard error only for logistic/linear and no others
-        if (out.reg == "logistic" & med.reg == "linear") {
-
+        if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
           sigmaV <- stats::sigma(med)^2
-
           Sigma <- rbind(cbind(Sigma, rep(0, nrow(Sigma))),
                          c(rep(0, ncol(Sigma)), sigmaV))
-
-
         } else {
           Sigma <- Sigma
         }
 
         rm(SigmaB, SigmaT)
 
+        # setting coefficients for no interaction = 0 -------------------------------
+        if(is.na(out$coefficients[paste0(treat, ":", mediator)])){
+          out$coefficients[paste0(treat, ":", mediator)] <- 0
+        } else {
+          out$coefficients[paste0(treat, ":", mediator)] <-
+            out$coefficients[paste0(treat, ":", mediator)]
+        }
+
+        # pulling coefficients from models
+        theta1 <- out$coefficients[treat]
+        theta2 <- out$coefficients[mediator]
+        theta3 <- out$coefficients[paste0(treat, ":", mediator)]
+
+        beta0 <- med$coefficients["(Intercept)"]
+        beta1 <- med$coefficients[treat]
+
         if (out.reg == "logistic" & med.reg == "logistic") {
 
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <- as.numeric(out$coefficients[treat] *
+          CDE <- as.numeric(theta1 *
                               (a - a_star) +
-                              out$coefficients[paste0(treat, ":", mediator)] *
+                              theta3 *
                               m * (a - a_star))
           CDE <- exp(CDE)
 
           ## natural direct effect
-          NDEnum <- exp(out$coefficients[treat] * a) *
-            (1 + exp(out$coefficients[mediator] +
-                       out$coefficients[paste0(treat, ":", mediator)] *
-                       a + med$coefficients["(Intercept)"] +
-                       med$coefficients[treat] * a_star + betasum))
-          NDEden <- exp(out$coefficients[treat] * a_star) *
-            (1 + exp(out$coefficients[mediator] +
-                       out$coefficients[paste0(treat, ":", mediator)] *
-                       a_star + med$coefficients["(Intercept)"] +
-                       med$coefficients[treat] * a_star + betasum))
+          NDEnum <- exp(theta1 * a) *
+            (1 + exp(theta2 +
+                       theta3 *
+                       a + beta0 +
+                       beta1 * a_star + betasum))
+          NDEden <- exp(theta1 * a_star) *
+            (1 + exp(theta2 +
+                       theta3 *
+                       a_star + beta0 +
+                       beta1 * a_star + betasum))
           NDE <- NDEnum / NDEden
 
           rm(NDEnum, NDEden)
 
           ## natural indirect effect
-          NIEnum <- (1 + exp(med$coefficients["(Intercept)"] +
-                               med$coefficients[treat] * a_star + betasum)) *
-            (1 + exp(out$coefficients[mediator] +
-                       out$coefficients[paste0(treat, ":", mediator)] *
-                       a + med$coefficients["(Intercept)"] +
-                       med$coefficients[treat] * a + betasum))
-          NIEden <- (1 + exp(med$coefficients["(Intercept)"] +
-                               med$coefficients[treat] * a + betasum)) *
-            (1 + exp(out$coefficients[mediator] +
-                       out$coefficients[paste0(treat, ":", mediator)] *
-                       a + med$coefficients["(Intercept)"] +
-                       med$coefficients[treat] * a_star + betasum))
+          NIEnum <- (1 + exp(beta0 +
+                               beta1 * a_star + betasum)) *
+            (1 + exp(theta2 +
+                       theta3 *
+                       a + beta0 +
+                       beta1 * a + betasum))
+          NIEden <- (1 + exp(beta0 +
+                               beta1 * a + betasum)) *
+            (1 + exp(theta2 +
+                       theta3 *
+                       a + beta0 +
+                       beta1 * a_star + betasum))
 
           NIE <- as.vector(NIEnum / NIEden)
 
@@ -762,29 +645,29 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <-  as.numeric(out$coefficients[treat] * (a - a_star) +
-                               out$coefficients[paste0(treat, ":", mediator)] *
+          CDE <-  as.numeric(theta1 * (a - a_star) +
+                               theta3 *
                                m * (a - a_star))
 
           ## natural direct effect
-          NDE <- out$coefficients[treat] * (a - a_star) +
-            (out$coefficients[paste0(treat, ":", mediator)] * (a - a_star)) *
-            ((exp(med$coefficients["(Intercept)"] + med$coefficients[treat] *
+          NDE <- theta1 * (a - a_star) +
+            (theta3 * (a - a_star)) *
+            ((exp(beta0 + beta1 *
                     a_star + betasum)) /
-               (1 + exp(med$coefficients["(Intercept)"] +
-                          med$coefficients[treat] * a_star + betasum)))
+               (1 + exp(beta0 +
+                          beta1 * a_star + betasum)))
 
           ## natural indirect effect
-          NIE <- (out$coefficients[mediator] +
-                    out$coefficients[paste0(treat, ":", mediator)] * a) *
-            ((exp(med$coefficients["(Intercept)"] + med$coefficients[treat] *
+          NIE <- (theta2 +
+                    theta3 * a) *
+            ((exp(beta0 + beta1 *
                     a + betasum) /
-                (1 + exp(med$coefficients["(Intercept)"] +
-                           med$coefficients[treat] * a + betasum))) -
-               (exp(med$coefficients["(Intercept)"] + med$coefficients[treat] *
+                (1 + exp(beta0 +
+                           beta1 * a + betasum))) -
+               (exp(beta0 + beta1 *
                       a_star + betasum) /
-                  (1 + exp(med$coefficients["(Intercept)"] +
-                             med$coefficients[treat] * a_star + betasum))))
+                  (1 + exp(beta0 +
+                             beta1 * a_star + betasum))))
 
           ## total effect
           TE <- NDE + NIE
@@ -794,25 +677,25 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <-  as.numeric(out$coefficients[treat] * (a - a_star) +
-                               out$coefficients[paste0(treat, ":", mediator)] *
+          CDE <-  as.numeric(theta1 * (a - a_star) +
+                               theta3 *
                                m * (a - a_star))
           CDE <- exp(CDE)
 
           ## natural direct effect
-          NDE <- (out$coefficients[treat] +
-                    out$coefficients[paste0(treat, ":", mediator)] *
-                    (med$coefficients["(Intercept)"] + med$coefficients[treat] *
-                       a_star + betasum + (out$coefficients[mediator] *
+          NDE <- (theta1 +
+                    theta3 *
+                    (beta0 + beta1 *
+                       a_star + betasum + (theta2 *
                                              sigmaV))) * (a - a_star) +
-            (0.5 * (out$coefficients[paste0(treat, ":", mediator)]^2) * sigmaV) *
+            (0.5 * (theta3^2) * sigmaV) *
             (a^2 - a_star^2)
           NDE <- exp(NDE)
 
           ## natural indirect effect
-          NIE <- (out$coefficients[mediator] * med$coefficients[treat] +
-                    out$coefficients[paste0(treat, ":", mediator)] *
-                    med$coefficients[treat] * a) * (a - a_star)
+          NIE <- (theta2 * beta1 +
+                    theta3 *
+                    beta1 * a) * (a - a_star)
           NIE <- exp(NIE)
 
           ## total effect
@@ -823,23 +706,23 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <- as.numeric(out$coefficients[treat] * (a - a_star) +
-                              out$coefficients[paste0(treat, ":", mediator)] *
+          CDE <- as.numeric(theta1 * (a - a_star) +
+                              theta3 *
                               m * (a - a_star))
 
           ## natural direct effect
-          NDE <- (out$coefficients[treat] +
-                    out$coefficients[paste0(treat, ":", mediator)] *
-                    med$coefficients["(Intercept)"] +
-                    out$coefficients[paste0(treat, ":", mediator)] *
-                    med$coefficients[treat] * a_star +
-                    out$coefficients[paste0(treat, ":", mediator)] * betasum) *
+          NDE <- (theta1 +
+                    theta3 *
+                    beta0 +
+                    theta3 *
+                    beta1 * a_star +
+                    theta3 * betasum) *
             (a - a_star)
 
           ## natural indirect effect
-          NIE <- (out$coefficients[mediator] * med$coefficients[treat] +
-                    out$coefficients[paste0(treat, ":", mediator)] *
-                    med$coefficients[treat] * a) * (a - a_star)
+          NIE <- (theta2 * beta1 +
+                    theta3 *
+                    beta1 * a) * (a - a_star)
 
           ## total effect
           TE <- NDE + NIE
