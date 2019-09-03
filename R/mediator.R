@@ -62,16 +62,20 @@ mediator <- function(data,
       })
 
   betas <- stats::coef(med.model) # coefficients from mediation model
-  betameans <- cmeans[which(names(cmeans) %in%
-                              names(betas)[!(names(betas) %in%
-                                               c("(Intercept)", treat))])] # subset to only covariates
-  betameans <- betameans[match(names(betas)[!(names(betas) %in% c("(Intercept)", treat))],
-                               names(betameans))] # put in order to match coefficients
-  betasum <- betameans %*% betas[names(betas)[!(names(betas) %in% c("(Intercept)", treat))]] # mean * coefficient from model
+  # betameans <- cmeans[which(names(cmeans) %in%
+  #                             names(betas)[!(names(betas) %in%
+  #                                              c("(Intercept)", treat))])] # subset to only covariates
+  # betameans <- betameans[match(names(betas)[!(names(betas) %in% c("(Intercept)", treat))],
+  #                              names(betameans))] # put in order to match coefficients
+  # betasum <- betameans %*% betas[names(betas)[!(names(betas) %in% c("(Intercept)", treat))]] # mean * coefficient from model
+  beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med.model, data)
+  betasum <- sum(beta_info$betasum, na.rm=TRUE)
+  betameans <- beta_info$betamean
 
   # get covariate names
-  covmeans <- cmeans[which(names(cmeans) %in% names(betas)[!(names(betas) %in% c("(Intercept)", treat))])]
-  cnames <- names(covmeans)
+  # covmeans <- cmeans[which(names(cmeans) %in% names(betas)[!(names(betas) %in% c("(Intercept)", treat))])]
+  # cnames <- names(covmeans)
+  cnames <- names(betameans)
 
   # Covariance matrix for standar errors
   SigmaB <- stats::vcov(med.model)
@@ -81,7 +85,7 @@ mediator <- function(data,
     SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
-  } else if (out.reg=="coxph") {
+  } else if (out.reg == "coxph") {
     SigmaT <- rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT)))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- "(Intercept)"
     dimnames(SigmaT)[[2]][1] <- "(Intercept)"
@@ -159,12 +163,12 @@ mediator <- function(data,
     if (boot_rep == 0) {
       ## controlled direct effect
       gCDE <- c(0, 0,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0,
                 (a - a_star),
                 0,
                 m * (a - a_star),
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gCDE <- gCDE[!is.na(gCDE)]
       ## natural direct effect
       A <- (exp(out.model$coefficients[mediator] +
@@ -189,12 +193,12 @@ mediator <- function(data,
       #   (1 + exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))
       gNDE <- c(A - B,
                 a_star * (A - B),
-                ifelse(length(betameans) > 0, t(betameans) * (A - B), NA), # problem child
+                if (length(betameans)) t(betameans) * (A - B) else NA, # problem child
                 0,
                 a - a_star,
                 A - B,
                 a * A - a_star * B,
-                ifelse(length(betameans) > 0, rep(0,length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gNDE <- gNDE[!is.na(gNDE)]
       # ## pure NDE needed for calculating CI for TE
       # gNDE_pure <- c(A_pure-B_pure,
@@ -238,11 +242,11 @@ mediator <- function(data,
 
       gNIE <- c((D + A) - (K + B),
                 a_star * (D - B) + a * (A - K),
-                ifelse(length(betameans) > 0, t(betameans) * ((D + A) - (K + B)), NA), # problem child
+                if (length(betameans)) t(betameans) * ((D + A) - (K + B)) else NA, # problem child
                 0, 0,
                 A - B,
                 a * (A - B),
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
 
       gNIE <- gNIE[!is.na(gNIE)]
 
@@ -317,10 +321,10 @@ mediator <- function(data,
 
       ## controlled direct effect
       gCDE <- c(0, 0,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 1, 0,
                 m,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gCDE <- gCDE[!is.na(gCDE)]
 
       ## natural direct effect
@@ -331,19 +335,17 @@ mediator <- function(data,
                (dex^2)) / ((1 + dex)^2)
       d2 <- (out.model$coefficients[paste0(treat, ":", mediator)] *
                a_star * dex * (1 + dex) - dex^2) / ((1 + dex)^2)
-      d3 <- ifelse(length(betameans) > 0,
-                   (out.model$coefficients[paste0(treat, ":", mediator)] *
+      d3 <- if (length(betameans)) (out.model$coefficients[paste0(treat, ":", mediator)] *
                       t(betameans) * dex * (1 + dex) - dex^2) /
-                     ((1 + dex)^2),
-                   NA)
+                     ((1 + dex)^2) else NA
       d7 <- dex / (1 + dex)
 
       gNDE <- c(d1,
                 d2,
-                ifelse(length(betameans) > 0, d3, NA),
+                if (length(betameans)) d3 else NA,
                 0, 1, 0,
                 d7,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gNDE <- gNDE[!is.na(gNDE)]
 
       rm(d1, d2, d3, d7)
@@ -380,15 +382,13 @@ mediator <- function(data,
                 (out.model$coefficients[mediator] +
                    out.model$coefficients[paste0(treat, ":", mediator)] * a) *
                   (a * Q - a_star * B),
-                ifelse(length(betameans) > 0,
-                       (out.model$coefficients[mediator] +
+                if (length(betameans)) (out.model$coefficients[mediator] +
                           out.model$coefficients[paste0(treat, ":", mediator)] *
-                          a) * t(betameans) * (Q - B),
-                       NA),
+                          a) * t(betameans) * (Q - B) else NA,
                 0, 0,
                 K - D,
                 a * (K - D),
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gNIE <- gNIE[!is.na(gNIE)]
 
       ## total effect - exchange A for Q 07/01/2019
@@ -397,17 +397,16 @@ mediator <- function(data,
                  (a - a_star) * B + (out.model$coefficients[mediator] +
                                        out.model$coefficients[paste0(treat, ":", mediator)] *
                                        a) * (a * Q - a_star * B),
-               ifelse(length(betameans) > 0,
-                      t(betameans) * out.model$coefficients[paste0(treat, ":", mediator)] *
-                        (a - a_star) * B + (out.model$coefficients[mediator] +
-                                              out.model$coefficients[paste0(treat, ":", mediator)] *
-                                              a) * (Q - B),
-                      NA), # problem child
+               if (length(betameans)) t(betameans) *
+                 out.model$coefficients[paste0(treat, ":", mediator)] *
+                 (a - a_star) * B + (out.model$coefficients[mediator] +
+                 out.model$coefficients[paste0(treat, ":", mediator)] * a) *
+                 (Q - B) else NA, # problem child
                0,
                a - a_star,
                K - D,
                (a - a_star) * D + a * (K - D),
-               ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+               if (length(betameans)) rep(0, length(betameans)) else NA)
       gTE <- gTE[!is.na(gTE)]
 
       # delta method of calculating confidence intervals
@@ -469,23 +468,17 @@ mediator <- function(data,
     if (boot_rep == 0) {
       ## controlled direct effect
       gCDE <- c(0, 0,
-                ifelse(length(betameans) > 0,
-                       rep(0, length(betameans)),
-                       NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 1, 0, m,
-                ifelse(length(betameans) > 0,
-                       rep(0, length(betameans)),
-                       NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0)
       gCDE <- gCDE[!is.na(gCDE)]
       ## natural direct effect
       gNDE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
                 out.model$coefficients[paste0(treat, ":", mediator)] *
                   a_star,
-                ifelse(length(betameans) > 0,
-                       out.model$coefficients[paste0(treat, ":", mediator)] *
-                         t(betameans),
-                       NA), # problem child
+                if (length(betameans)) out.model$coefficients[paste0(treat, ":", mediator)] *
+                         t(betameans) else NA, # problem child
                 0, 1,
                 out.model$coefficients[paste0(treat, ":", mediator)] * sigmaV,
                 (med.model$coefficients["(Intercept)"] +
@@ -493,9 +486,7 @@ mediator <- function(data,
                    a_star + betasum + out.model$coefficients[mediator] *
                    sigmaV + out.model$coefficients[paste0(treat, ":", mediator)] *
                    sigmaV * (a + a_star)), # C = c?
-                ifelse(length(betameans) > 0,
-                       rep(0, length(betameans)),
-                       NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 out.model$coefficients[paste0(treat, ":", mediator)] *
                   out.model$coefficients[mediator] + 0.5 *
                   (out.model$coefficients[paste0(treat, ":", mediator)]^2) *
@@ -506,21 +497,20 @@ mediator <- function(data,
       gNIE <- c(0,
                 out.model$coefficients[mediator] +
                   out.model$coefficients[paste0(treat, ":", mediator)] * a,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 0,
                 med.model$coefficients[treat],
                 med.model$coefficients[treat] * a,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA), 0)
+                if (length(betameans)) rep(0, length(betameans)) else NA,
+                0)
       gNIE <- gNIE[!is.na(gNIE)]
 
       ## total effect
       gTE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
                out.model$coefficients[paste0(treat, ":", mediator)] *
                  (a + a_star) + out.model$coefficients[mediator],
-               ifelse(length(betameans) > 0,
-                      out.model$coefficients[paste0(treat, ":", mediator)] *
-                        t(betameans),
-                      NA), # problem child
+               if (length(betameans)) out.model$coefficients[paste0(treat, ":", mediator)] *
+                        t(betameans) else NA, # problem child
                0, 1,
                out.model$coefficients[paste0(treat, ":", mediator)] *
                  sigmaV + med.model$coefficients[treat],
@@ -529,7 +519,7 @@ mediator <- function(data,
                  out.model$coefficients[mediator] * sigmaV +
                  out.model$coefficients[paste0(treat, ":", mediator)] *
                  sigmaV * (a^2 - a_star^2),
-               ifelse(length(betameans) > 0, rep(0, length(betameans)), NA),
+               if (length(betameans)) rep(0, length(betameans)) else NA,
                0.5 * (out.model$coefficients[paste0(treat, ":", mediator)]^2) *
                  (a^2 - a_star^2))
       gTE <- gTE[!is.na(gTE)]
@@ -594,23 +584,21 @@ mediator <- function(data,
 
       ## controlled direct effect
       gCDE <- c(0, 0,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 1, 0,
                 m,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gCDE <- gCDE[!is.na(gCDE)]
 
       ## natural direct effect
       gNDE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
                 out.model$coefficients[paste0(treat, ":", mediator)] * a_star,
-                ifelse(length(betameans) > 0,
-                       t(out.model$coefficients[paste0(treat, ":", mediator)] *
-                           t(betameans)),
-                       NA), # problem child
+                if (length(betameans)) t(out.model$coefficients[paste0(treat, ":", mediator)] *
+                           t(betameans)) else NA, # problem child
                 0, 1, 0,
                 med.model$coefficients["(Intercept)"] +
                   med.model$coefficients[treat] * a_star + betasum,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gNDE <- gNDE[!is.na(gNDE)]
 
       ## pure natural indirect effect
@@ -618,26 +606,24 @@ mediator <- function(data,
       gNIE <- c(0,
                 out.model$coefficients[mediator] +
                   out.model$coefficients[paste0(treat, ":", mediator)] * a_star,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA),
+                if (length(betameans)) rep(0, length(betameans)) else NA,
                 0, 0,
                 med.model$coefficients[treat],
                 med.model$coefficients[treat] * a_star,
-                ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+                if (length(betameans)) rep(0, length(betameans)) else NA)
       gNIE <- gNIE[!is.na(gNIE)]
 
       ## total effects
       gTE <- c(out.model$coefficients[paste0(treat, ":", mediator)],
                out.model$coefficients[paste0(treat, ":", mediator)] *
                  (a + a_star) + out.model$coefficients[mediator],
-               ifelse(length(betameans) > 0,
-                      out.model$coefficients[paste0(treat, ":", mediator)] %*%
-                        t(betameans),
-                      NA), # problem child : c' and C' = ?
+               if (length(betameans)) out.model$coefficients[paste0(treat, ":", mediator)] %*%
+                        t(betameans) else NA, # problem child : c' and C' = ?
                0, 1,
                med.model$coefficients[treat],
                med.model$coefficients["(Intercept)"] +
                  med.model$coefficients[treat] * (a + a_star) + betasum,
-               ifelse(length(betameans) > 0, rep(0, length(betameans)), NA))
+               if (length(betameans)) rep(0, length(betameans)) else NA)
       gTE <- gTE[!is.na(gTE)]
 
       # delta method of calculating confidence intervals
