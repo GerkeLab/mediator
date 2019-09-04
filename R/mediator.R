@@ -133,14 +133,18 @@ mediator <- function(data,
     CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
     CDE <- exp(CDE)
     ## natural direct effect
-    NDEnum <- exp(theta1 * a) * (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
-    NDEden <- exp(theta1 * a_star) * (1 + exp(theta2 + theta3 * a_star + beta0 + beta1 * a_star + betasum))
+    NDEnum <- exp(theta1 * a) * exp_sum_1(theta2, theta3 * a, beta0,
+                                          beta1 * a_star, betasum)
+    NDEden <- exp(theta1 * a_star) * exp_sum_1(theta2, theta3 * a_star,
+                                               beta0, beta1 * a_star,
+                                               betasum)
     NDE <- NDEnum / NDEden
     rm(NDEnum, NDEden)
     ## natural indirect effect
-    NIEnum <- (1 + exp(beta0 + beta1 * a_star + betasum)) * (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a + betasum))
-    NIEden <- (1 + exp(beta0 + beta1 * a + betasum)) *
-      (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
+    NIEnum <- exp_sum_1(beta0, beta1 * a_star, betasum) *
+      exp_sum_1(theta2, theta3 * a, beta0, beta1 * a, betasum)
+    NIEden <- exp_sum_1(beta0, beta1 * a, betasum) *
+      exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
     NIE <- as.vector(NIEnum / NIEden)
     rm(NIEnum, NIEden)
     ## total effect
@@ -160,10 +164,10 @@ mediator <- function(data,
                 if (length(betameans)) rep(0, length(betameans)) else NA)
       gCDE <- gCDE[!is.na(gCDE)]
       ## natural direct effect
-      A <- (exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum)) /
-        (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
-      B <- (exp(theta2 + theta3 * a_star + beta0 + beta1 * a_star + betasum)) /
-        (1 + exp(theta2 + theta3 * a_star + beta0 + beta1 * a_star + betasum))
+      A <- exp_sum(theta2, theta3 * a, beta0, beta1 * a_star, betasum) /
+        exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
+      B <- exp_sum(theta2, theta3 * a_star, beta0, beta1 * a_star, betasum) /
+        exp_sum_1(theta2, theta3 * a_star, beta0, beta1 * a_star, betasum)
       # A_total <- (exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a_star + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))/
       #   (1 + exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a_star + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))
       # B_total <- (exp(out.model$coefficients[mediator] + out.model$coefficients[paste0(treat,":",mediator)]*a + med.model$coefficients["(Intercept)"] + med.model$coefficients[treat]*a + betasum))/
@@ -189,17 +193,17 @@ mediator <- function(data,
       # gNDE_pure <- gNDE_pure[!is.na(gNDE_pure)]
       rm(A, B)
       ## natural indirect effect
-      A <- (exp(theta2 + theta3 * a + beta0 + beta1 * a + betasum)) /
-        (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a + betasum))
+      A <- exp_sum(theta2, theta3 * a, beta0, beta1 * a, betasum) /
+        exp_sum_1(theta2, theta3 * a, beta0, beta1 * a, betasum)
 
-      B <- (exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum)) /
-        (1 + exp(theta2 + theta3 * a + beta0 + beta1 * a_star + betasum))
+      B <- exp_sum(theta2, theta3 * a, beta0, beta1 * a_star, betasum) /
+        exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
 
-      K <- (exp(beta0 + beta1 * a + betasum)) /
-        (1 + exp(beta0 + beta1 * a + betasum))
+      K <- exp_sum(beta0, beta1 * a, betasum) /
+        exp_sum_1(beta0, beta1 * a, betasum)
 
-      D <- (exp(beta0 + beta1 * a_star + betasum)) /
-        (1 + exp(beta0 + beta1 * a_star + betasum))
+      D <- exp_sum(beta0, beta1 * a_star, betasum) /
+        exp_sum_1(beta0, beta1 * a_star, betasum)
 
       gNIE <- c((D + A) - (K + B),
                 a_star * (D - B) + a * (A - K),
@@ -248,12 +252,15 @@ mediator <- function(data,
     CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
     ## natural direct effect
-    NDE <- theta1 * (a - a_star) + (theta3 * (a - a_star)) * ((exp(beta0 + beta1 * a_star + betasum)) /
-                                                                (1 + exp(beta0 + beta1 * a_star + betasum)))
+    NDE <- theta1 * (a - a_star) + (theta3 * (a - a_star)) *
+      (exp_sum(beta0, beta1 * a_star, betasum) /
+         exp_sum_1(beta0, beta1 * a_star, betasum))
 
     ## natural indirect effect
-    NIE <- (theta2 + theta3 * a) * ((exp(beta0 + beta1 * a + betasum) / (1 + exp(beta0 + beta1 * a + betasum))) -
-         (exp(beta0 + beta1 * a_star + betasum) / (1 + exp(beta0 + beta1 * a_star + betasum))))
+    NIE <- (theta2 + theta3 * a) * ((exp_sum(beta0, beta1 * a, betasum) /
+                                       exp_sum_1(beta0, beta1 * a, betasum)) -
+                                      (exp_sum(beta0, beta1 * a_star, betasum) /
+                                         exp_sum_1(beta0, beta1 * a_star, betasum)))
 
     ## total effect
     TE <- NDE + NIE
@@ -273,7 +280,7 @@ mediator <- function(data,
       gCDE <- gCDE[!is.na(gCDE)]
 
       ## natural direct effect
-      dex <- exp(beta0 + beta1 * a_star + betasum)
+      dex <- exp_sum(beta0, beta1 * a_star, betasum)
       d1 <- (theta3 * dex * (1 + dex) - theta3 * (dex^2)) / ((1 + dex)^2)
       d2 <- (theta3 * a_star * dex * (1 + dex) - dex^2) / ((1 + dex)^2)
       d3 <- if (length(betameans)) (theta3 * t(betameans) * dex * (1 + dex) - dex^2) /
@@ -291,15 +298,18 @@ mediator <- function(data,
       rm(d1, d2, d3, d7)
 
       ## natural indirect effect
-      Q <- ((exp(beta0 + beta1 * a + betasum) * (1 + exp(beta0 + beta1 * a + betasum))) - ((exp(beta0 + beta1 * a + betasum))^2)) /
-        ((1 + exp(beta0 + beta1 * a + betasum))^2)
-      B <- ((exp(beta0 + beta1 * a_star + betasum) * (1 + exp(beta0 + beta1 * a_star + betasum))) -
-              ((exp(beta0 + beta1 * a_star + betasum))^2)) /
-        ((1 + exp(beta0 + beta1 * a_star + betasum))^2)
-      K <- exp(beta0 + beta1 * a + betasum) /
-        (1 + exp(beta0 + beta1 * a + betasum))
-      D <- exp(beta0 + beta1 * a_star + betasum) /
-        (1 + exp(beta0 + beta1 * a_star + betasum))
+      Q <- ((exp_sum(beta0, beta1 * a, betasum) *
+               exp_sum_1(beta0, beta1 * a, betasum)) -
+              ((exp_sum(beta0, beta1 * a, betasum))^2)) /
+        (exp_sum_1(beta0, beta1 * a, betasum)^2)
+      B <- ((exp_sum(beta0, beta1 * a_star, betasum) *
+               exp_sum_1(beta0, beta1 * a_star, betasum)) -
+              ((exp_sum(beta0, beta1 * a_star, betasum))^2)) /
+        (exp_sum_1(beta0, beta1 * a_star, betasum)^2)
+      K <- exp_sum(beta0, beta1 * a, betasum) /
+        exp_sum_1(beta0, beta1 * a, betasum)
+      D <- exp_sum(beta0, beta1 * a_star, betasum) /
+        exp_sum_1(beta0, beta1 * a_star, betasum)
 
       gNIE <- c((theta2 + theta3 * a) * (Q - B),
                 (theta2 + theta3 * a) * (a * Q - a_star * B),
@@ -312,8 +322,10 @@ mediator <- function(data,
 
       ## total effect - exchange A for Q 07/01/2019
       gTE <- c(theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (Q - B),
-               a_star * theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (a * Q - a_star * B),
-               if (length(betameans)) t(betameans) * theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (Q - B) else NA, # problem child
+               a_star * theta3 * (a - a_star) * B + (theta2 + theta3 * a) *
+                 (a * Q - a_star * B),
+               if (length(betameans)) t(betameans) * theta3 * (a - a_star) *
+                 B + (theta2 + theta3 * a) * (Q - B) else NA, # problem child
                0,
                a - a_star,
                K - D,
@@ -353,7 +365,9 @@ mediator <- function(data,
     CDE <- exp(CDE)
 
     ## natural direct effect
-    NDE <- (theta1 + theta3 * (beta0 + beta1 * a_star + betasum + (theta2 * sigmaV))) * (a - a_star) + (0.5 * (theta3^2) * sigmaV) * (a^2 - a_star^2)
+    NDE <- (theta1 + theta3 * (beta0 + beta1 * a_star + betasum +
+                                 (theta2 * sigmaV))) * (a - a_star) +
+      (0.5 * (theta3^2) * sigmaV) * (a^2 - a_star^2)
     NDE <- exp(NDE)
 
     ## natural indirect effect
@@ -380,7 +394,8 @@ mediator <- function(data,
                 if (length(betameans)) theta3 * t(betameans) else NA, # problem child
                 0, 1,
                 theta3 * sigmaV,
-                (beta0 + beta1 * a_star + betasum + theta2 * sigmaV + theta3 * sigmaV * (a + a_star)), # C = c?
+                (beta0 + beta1 * a_star + betasum + theta2 * sigmaV +
+                   theta3 * sigmaV * (a + a_star)), # C = c?
                 if (length(betameans)) rep(0, length(betameans)) else NA,
                 theta3 * theta2 + 0.5 * (theta3^2) * (a + a_star))
       gNDE <- gNDE[!is.na(gNDE)]
@@ -402,7 +417,8 @@ mediator <- function(data,
                if (length(betameans)) theta3 * t(betameans) else NA, # problem child
                0, 1,
                theta3 * sigmaV + beta1,
-               beta0 + beta1 * (a + a_star) + betasum + theta2 * sigmaV + theta3 * sigmaV * (a^2 - a_star^2),
+               beta0 + beta1 * (a + a_star) + betasum + theta2 * sigmaV +
+                 theta3 * sigmaV * (a^2 - a_star^2),
                if (length(betameans)) rep(0, length(betameans)) else NA,
                0.5 * (theta3^2) * (a^2 - a_star^2))
       gTE <- gTE[!is.na(gTE)]
@@ -441,7 +457,8 @@ mediator <- function(data,
     CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
     ## natural direct effect
-    NDE <- (theta1 + theta3 * beta0 + theta3 * beta1 * a_star + theta3 * betasum) * (a - a_star)
+    NDE <- (theta1 + theta3 * beta0 + theta3 * beta1 * a_star + theta3 *
+              betasum) * (a - a_star)
 
     ## natural indirect effect
     NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
@@ -598,40 +615,24 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <- as.numeric(theta1 *
-                              (a - a_star) +
-                              theta3 *
-                              m * (a - a_star))
+          CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
           CDE <- exp(CDE)
 
           ## natural direct effect
-          NDEnum <- exp(theta1 * a) *
-            (1 + exp(theta2 +
-                       theta3 *
-                       a + beta0 +
-                       beta1 * a_star + betasum))
-          NDEden <- exp(theta1 * a_star) *
-            (1 + exp(theta2 +
-                       theta3 *
-                       a_star + beta0 +
-                       beta1 * a_star + betasum))
+          NDEnum <- exp(theta1 * a) * exp_sum_1(theta2, theta3 * a, beta0,
+                                                beta1 * a_star, betasum)
+          NDEden <- exp(theta1 * a_star) * exp_sum_1(theta2, theta3 * a_star,
+                                                     beta0, beta1 * a_star,
+                                                     betasum)
           NDE <- NDEnum / NDEden
 
           rm(NDEnum, NDEden)
 
           ## natural indirect effect
-          NIEnum <- (1 + exp(beta0 +
-                               beta1 * a_star + betasum)) *
-            (1 + exp(theta2 +
-                       theta3 *
-                       a + beta0 +
-                       beta1 * a + betasum))
-          NIEden <- (1 + exp(beta0 +
-                               beta1 * a + betasum)) *
-            (1 + exp(theta2 +
-                       theta3 *
-                       a + beta0 +
-                       beta1 * a_star + betasum))
+          NIEnum <- exp_sum_1(beta0, beta1 * a_star, betasum) *
+            exp_sum_1(theta2, theta3 * a, beta0, beta1 * a, betasum)
+          NIEden <- exp_sum_1(beta0, beta1 * a, betasum) *
+            exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
 
           NIE <- as.vector(NIEnum / NIEden)
 
@@ -645,29 +646,18 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <-  as.numeric(theta1 * (a - a_star) +
-                               theta3 *
-                               m * (a - a_star))
+          CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
           ## natural direct effect
-          NDE <- theta1 * (a - a_star) +
-            (theta3 * (a - a_star)) *
-            ((exp(beta0 + beta1 *
-                    a_star + betasum)) /
-               (1 + exp(beta0 +
-                          beta1 * a_star + betasum)))
+          NDE <- theta1 * (a - a_star) + (theta3 * (a - a_star)) *
+            ((exp_sum(beta0, beta1 * a_star, betasum)) /
+               exp_sum_1(beta0, beta1 * a_star, betasum))
 
           ## natural indirect effect
-          NIE <- (theta2 +
-                    theta3 * a) *
-            ((exp(beta0 + beta1 *
-                    a + betasum) /
-                (1 + exp(beta0 +
-                           beta1 * a + betasum))) -
-               (exp(beta0 + beta1 *
-                      a_star + betasum) /
-                  (1 + exp(beta0 +
-                             beta1 * a_star + betasum))))
+          NIE <- (theta2 + theta3 * a) * ((exp_sum(beta0, beta1 * a, betasum) /
+                                             exp_sum_1(beta0, beta1 * a, betasum)) -
+                                            (exp_sum(beta0, beta1 * a_star, betasum) /
+                                               exp_sum_1(beta0, beta1 * a_star, betasum)))
 
           ## total effect
           TE <- NDE + NIE
@@ -677,25 +667,17 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <-  as.numeric(theta1 * (a - a_star) +
-                               theta3 *
-                               m * (a - a_star))
+          CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
           CDE <- exp(CDE)
 
           ## natural direct effect
-          NDE <- (theta1 +
-                    theta3 *
-                    (beta0 + beta1 *
-                       a_star + betasum + (theta2 *
-                                             sigmaV))) * (a - a_star) +
-            (0.5 * (theta3^2) * sigmaV) *
-            (a^2 - a_star^2)
+          NDE <- (theta1 + theta3 * (beta0 + beta1 * a_star + betasum +
+                                       (theta2 * sigmaV))) * (a - a_star) +
+            (0.5 * (theta3^2) * sigmaV) * (a^2 - a_star^2)
           NDE <- exp(NDE)
 
           ## natural indirect effect
-          NIE <- (theta2 * beta1 +
-                    theta3 *
-                    beta1 * a) * (a - a_star)
+          NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
           NIE <- exp(NIE)
 
           ## total effect
@@ -706,23 +688,14 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <- as.numeric(theta1 * (a - a_star) +
-                              theta3 *
-                              m * (a - a_star))
+          CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
           ## natural direct effect
-          NDE <- (theta1 +
-                    theta3 *
-                    beta0 +
-                    theta3 *
-                    beta1 * a_star +
-                    theta3 * betasum) *
-            (a - a_star)
+          NDE <- (theta1 + theta3 * beta0 + theta3 * beta1 * a_star + theta3 *
+                    betasum) * (a - a_star)
 
           ## natural indirect effect
-          NIE <- (theta2 * beta1 +
-                    theta3 *
-                    beta1 * a) * (a - a_star)
+          NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
 
           ## total effect
           TE <- NDE + NIE
