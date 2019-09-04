@@ -36,8 +36,8 @@ cov_pred <- function(cmeans, cmodes, treat, mediator, med.model, data){
 
   # get model matrix and multiply by coef from model --------------------------
   ## subset to only those needed - not intercept or treatment
-  tmp <- model.matrix(med.model, data = pred_data)
-  cov_vals <- data.frame(beta = coef(med.model),
+  tmp <- stats::model.matrix(med.model, data = pred_data)
+  cov_vals <- data.frame(beta = stats::coef(med.model),
                          val = t(tmp)[,1])
   drop <- c("(Intercept)",treat)
   cov_vals <- cov_vals[!(rownames(cov_vals) %in% drop),]
