@@ -17,6 +17,8 @@ You can install `mediator` from github with:
 devtools::install_github("gerkelab/mediator")
 ```
 
+<!--- add CRAN once up --->
+
 ## Usage
 
 `mediator` currently implements mediation analysis for dichotomous and
@@ -34,7 +36,8 @@ adjusted for.
 
 In the above DAG the path for the NIE is shown in blue while the path
 for the NDE is in purple. The TE is the combined effect of both the NIE
-and NDE.
+and NDE. When no interaction between the exposure and mediator exists,
+the CDE and NDE are the same.
 
 The simplest use case of `mediator` would be as follows:
 
@@ -58,6 +61,22 @@ mediator::mediator(data = example250,
 A data frame (printed to the console if not assigned to an object) is
 returned containing the point estimates and 95% confidence intervals.
 
+Since the outcome was a based on a binomial logistic regression, the
+results from this example are interpreted as a series of odds ratio.
+When the oucome model is a linear regression, the results are
+intrepreted as average values. Relative risks can be used for binary
+outcomes when appropriate and thus intrepreted under that model.
+
+In this example, based on the CDE, when `y` = 1, the effect of `x` on
+`cens` is 0.43; while according to the NDE, when `y` is the value
+observed in the absense of `x` (`x` = 0), the effect of `x` on `cens` is
+0.72. The NIE tells that the effect of `x` on `cens` through `y` is
+1.07. The TE of `x` on `cens` , both direct and indirect, is 0.76.
+
+Since the TE is the combined effect of the NDE and NIE, statistically
+significant effects can be observed in opposite directions and result in
+a TE that is roughly equal to 0.
+
 ## Additional resources
 
 For an in-depth explanation of mediation analysis or complementary tools
@@ -69,6 +88,10 @@ The parametric model-based approach of `mediator` differs from another R
 package,
 [`mediation`](https://cran.r-project.org/web/packages/mediation/vignettes/mediation.pdf),
 which conducts mediation analysis under a non-parametric framework.
+
+Additional examples of `mediator` are available under
+[vignettes](https://github.com/GerkeLab/mediator/tree/tag-edits/vignettes),
+as well as comparisons of `mediator` and the SAS macro `%mediation`.
 
 -----
 
