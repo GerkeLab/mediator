@@ -2,7 +2,7 @@
 # mediator <img src="man/figures/hex.png" align="right" height="139" />
 
 The goal of mediator is to conduct mediation analysis under the
-counterfactual framework, allowing interation between the exposure and
+counterfactual framework, allowing interaction between the exposure and
 mediator.
 
 ## Installation
@@ -11,7 +11,7 @@ You can install `mediator` from github with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("jhcreed/mediator")
+devtools::install_github("gerkelab/mediator")
 ```
 
 ## Usage
