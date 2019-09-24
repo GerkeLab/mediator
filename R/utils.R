@@ -12,7 +12,18 @@ exp_sum_1 <- function(...) {
 
 # cov_pred gets betas*mean or betas*mode for covariates
 ## function still needs to be cleaned up a bit
-cov_pred <- function(cmeans, cmodes, treat, mediator, med.model, data){
+cov_pred <- function(treat, mediator, med.model, data){
+
+  # calculate means and modes -------------------------------------------------
+  cmeans <- data %>%
+    dplyr::select_if(is.numeric) %>%
+    purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
+  cmodes <- data %>%
+    dplyr::select_if(purrr::negate(is.numeric)) %>%
+    purrr::map_chr(~{
+      ux <- unique(.x)
+      ux[which.max(tabulate(match(.x, ux)))]
+    })
 
   # combine means and modes into data frame -----------------------------------
   pred_data <- data.frame(t(cmeans))

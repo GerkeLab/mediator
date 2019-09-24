@@ -51,18 +51,19 @@ mediator <- function(data,
   data <- data %>% dplyr::select(var_set)
 
   # calculate mean of numeric values, mode of characters/factors
-  cmeans <- data %>%
-    dplyr::select_if(is.numeric) %>%
-    purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
-  cmodes <- data %>%
-    dplyr::select_if(purrr::negate(is.numeric)) %>%
-    purrr::map_chr(~{
-      ux <- unique(.x)
-      ux[which.max(tabulate(match(.x, ux)))]
-      })
+  # cmeans <- data %>%
+  #   dplyr::select_if(is.numeric) %>%
+  #   purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
+  # cmodes <- data %>%
+  #   dplyr::select_if(purrr::negate(is.numeric)) %>%
+  #   purrr::map_chr(~{
+  #     ux <- unique(.x)
+  #     ux[which.max(tabulate(match(.x, ux)))]
+  #     })
 
   betas <- stats::coef(med.model) # coefficients from mediation model
-  beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med.model, data)
+  # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med.model, data)
+  beta_info <- cov_pred(treat, mediator, med.model, data)
   betasum <- sum(beta_info$betasum, na.rm=TRUE)
   betameans <- beta_info$betamean
 
@@ -122,103 +123,53 @@ mediator <- function(data,
 
     # calculate effect estimates
     ## controlled direct effect
-    CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
-    CDE <- exp(CDE)
+    CDE <- controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
+
     ## natural direct effect
-    NDEnum <- exp(theta1 * a) * exp_sum_1(theta2, theta3 * a, beta0,
-                                          beta1 * a_star, betasum)
-    NDEden <- exp(theta1 * a_star) * exp_sum_1(theta2, theta3 * a_star,
-                                               beta0, beta1 * a_star,
-                                               betasum)
-    NDE <- NDEnum / NDEden
-    rm(NDEnum, NDEden)
+    NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                 beta1, a_star, betasum, sigmaV,
+                                 out.reg, med.reg)
+
     ## natural indirect effect
-    NIEnum <- exp_sum_1(beta0, beta1 * a_star, betasum) *
-      exp_sum_1(theta2, theta3 * a, beta0, beta1 * a, betasum)
-    NIEden <- exp_sum_1(beta0, beta1 * a, betasum) *
-      exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
-    NIE <- as.vector(NIEnum / NIEden)
-    rm(NIEnum, NIEden)
+    NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                   betasum, theta2, theta3, a)
+
     ## total effect
-    TE <- NDE * NIE
+    TE <- total_effect(NDE, NIE, out.reg)
+
     ## proportion mediated
-    PM <- (NDE * (NIE - 1)) / (NDE * NIE - 1)
+    PM <- prop_mediated(NDE, NIE, out.reg, TE)
 
     # calculate GAMMA for SE
     if (boot_rep == 0) {
       ## controlled direct effect
-      gCDE <- c(0, 0,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0,
-                (a - a_star),
-                0,
-                m * (a - a_star),
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gCDE <- gCDE[!is.na(gCDE)]
+      gCDE <- gamma_cde(betameans, a, a_star, m, out.reg, med.reg)
+
       ## natural direct effect
-      A <- exp_sum(theta2, theta3 * a, beta0, beta1 * a_star, betasum) /
-        exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
-      B <- exp_sum(theta2, theta3 * a_star, beta0, beta1 * a_star, betasum) /
-        exp_sum_1(theta2, theta3 * a_star, beta0, beta1 * a_star, betasum)
-      gNDE <- c(A - B,
-                a_star * (A - B),
-                if (length(betameans)) t(betameans) * (A - B) else NA,
-                0,
-                a - a_star,
-                A - B,
-                a * A - a_star * B,
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gNDE <- gNDE[!is.na(gNDE)]
-      rm(A, B)
+      gNDE <- gamma_nde(out.reg, med.reg, theta2, theta3, a, beta0,
+                         beta1, a_star, betasum, betameans, sigmaV)
+
       ## natural indirect effect
-      A <- exp_sum(theta2, theta3 * a, beta0, beta1 * a, betasum) /
-        exp_sum_1(theta2, theta3 * a, beta0, beta1 * a, betasum)
-
-      B <- exp_sum(theta2, theta3 * a, beta0, beta1 * a_star, betasum) /
-        exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
-
-      K <- exp_sum(beta0, beta1 * a, betasum) /
-        exp_sum_1(beta0, beta1 * a, betasum)
-
-      D <- exp_sum(beta0, beta1 * a_star, betasum) /
-        exp_sum_1(beta0, beta1 * a_star, betasum)
-
-      gNIE <- c((D + A) - (K + B),
-                a_star * (D - B) + a * (A - K),
-                if (length(betameans)) t(betameans) * ((D + A) - (K + B)) else NA,
-                0, 0,
-                A - B,
-                a * (A - B),
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-
-      gNIE <- gNIE[!is.na(gNIE)]
-
-      rm(A, B, K, D)
+      gNIE <- gamma_nie(beta0, beta1, a, betasum, a_star, out.reg,
+                        med.reg, theta2, theta3, betameans)
 
       ## total effect
-      gTE <- gNDE + gNIE
+      gTE <- gamma_te(gNDE, gNIE, beta0, beta1, a, betasum, a_star,
+                      theta3, theta2, betameans, out.reg, med.reg, sigmaV)
 
       # delta method of calculating confidence intervals
 
       ## controlled direct effect
-      varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- exp(log(CDE) + c(-1, 1) * stats::qnorm(.975) *
-                      as.vector(sqrt(varCDE)))
+      CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
 
       ## natural direct effect
-      varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- exp(as.vector(log(NDE)) + c(-1, 1) * stats::qnorm(.975) *
-                      as.vector(sqrt(varNDE)))
+      CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
 
       ## natural indirect effect
-      varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- exp(log(NIE) + c(-1, 1) * stats::qnorm(.975) *
-                      as.vector(sqrt(varNIE)))
+      CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
 
       ## total effect
-      varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- exp(as.vector(log(TE)) + c(-1, 1) * stats::qnorm(.975) *
-                     as.vector(sqrt(varTE)))
+      CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
 
     }
 
@@ -227,111 +178,55 @@ mediator <- function(data,
     # calculate effect estimates
 
     ## controlled direct effect
-    CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
+    CDE <- controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
     ## natural direct effect
-    NDE <- theta1 * (a - a_star) + (theta3 * (a - a_star)) *
-      (exp_sum(beta0, beta1 * a_star, betasum) /
-         exp_sum_1(beta0, beta1 * a_star, betasum))
+    NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                 beta1, a_star, betasum, sigmaV,
+                                 out.reg, med.reg)
 
     ## natural indirect effect
-    NIE <- (theta2 + theta3 * a) * ((exp_sum(beta0, beta1 * a, betasum) /
-                                       exp_sum_1(beta0, beta1 * a, betasum)) -
-                                      (exp_sum(beta0, beta1 * a_star, betasum) /
-                                         exp_sum_1(beta0, beta1 * a_star, betasum)))
+    NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                   betasum, theta2, theta3, a)
 
     ## total effect
-    TE <- NDE + NIE
+    TE <- total_effect(NDE, NIE, out.reg)
 
     ## proportion mediated
-    PM <- NIE / TE
+    PM <- prop_mediated(NDE, NIE, out.reg, TE)
 
     # calculate GAMMA for SE
     if (boot_rep == 0) {
 
       ## controlled direct effect
-      gCDE <- c(0, 0,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0, 1, 0,
-                m,
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gCDE <- gCDE[!is.na(gCDE)]
+      gCDE <- gamma_cde(betameans, a, a_star, m, out.reg, med.reg)
 
       ## natural direct effect
-      dex <- exp_sum(beta0, beta1 * a_star, betasum)
-      d1 <- (theta3 * dex * (1 + dex) - theta3 * (dex^2)) / ((1 + dex)^2)
-      d2 <- (theta3 * a_star * dex * (1 + dex) - dex^2) / ((1 + dex)^2)
-      d3 <- if (length(betameans)) (theta3 * t(betameans) * dex * (1 + dex) - dex^2) /
-                     ((1 + dex)^2) else NA
-      d7 <- dex / (1 + dex)
-
-      gNDE <- c(d1,
-                d2,
-                if (length(betameans)) d3 else NA,
-                0, 1, 0,
-                d7,
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gNDE <- gNDE[!is.na(gNDE)]
-
-      rm(d1, d2, d3, d7)
+      gNDE <- gamma_nde(out.reg, med.reg, theta2, theta3, a, beta0,
+                        beta1, a_star, betasum, betameans, sigmaV)
 
       ## natural indirect effect
-      Q <- ((exp_sum(beta0, beta1 * a, betasum) *
-               exp_sum_1(beta0, beta1 * a, betasum)) -
-              ((exp_sum(beta0, beta1 * a, betasum))^2)) /
-        (exp_sum_1(beta0, beta1 * a, betasum)^2)
-      B <- ((exp_sum(beta0, beta1 * a_star, betasum) *
-               exp_sum_1(beta0, beta1 * a_star, betasum)) -
-              ((exp_sum(beta0, beta1 * a_star, betasum))^2)) /
-        (exp_sum_1(beta0, beta1 * a_star, betasum)^2)
-      K <- exp_sum(beta0, beta1 * a, betasum) /
-        exp_sum_1(beta0, beta1 * a, betasum)
-      D <- exp_sum(beta0, beta1 * a_star, betasum) /
-        exp_sum_1(beta0, beta1 * a_star, betasum)
-
-      gNIE <- c((theta2 + theta3 * a) * (Q - B),
-                (theta2 + theta3 * a) * (a * Q - a_star * B),
-                if (length(betameans)) (theta2 + theta3 * a) * t(betameans) * (Q - B) else NA,
-                0, 0,
-                K - D,
-                a * (K - D),
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gNIE <- gNIE[!is.na(gNIE)]
+      gNIE <- gamma_nie(beta0, beta1, a, betasum, a_star, out.reg,
+                        med.reg, theta2, theta3, betameans)
 
       ## total effect - exchange A for Q 07/01/2019
-      gTE <- c(theta3 * (a - a_star) * B + (theta2 + theta3 * a) * (Q - B),
-               a_star * theta3 * (a - a_star) * B + (theta2 + theta3 * a) *
-                 (a * Q - a_star * B),
-               if (length(betameans)) t(betameans) * theta3 * (a - a_star) *
-                 B + (theta2 + theta3 * a) * (Q - B) else NA,
-               0,
-               a - a_star,
-               K - D,
-               (a - a_star) * D + a * (K - D),
-               if (length(betameans)) rep(0, length(betameans)) else NA)
-      gTE <- gTE[!is.na(gTE)]
+      gTE <- gamma_te(gNDE, gNIE, beta0, beta1, a, betasum, a_star,
+                      theta3, theta2, betameans, out.reg, med.reg, sigmaV)
 
       # delta method of calculating confidence intervals
 
       ## controlled direct effect
-      varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- CDE + c(-1, 1) * stats::qnorm(.975) * as.vector(sqrt(varCDE)) *
-        abs(a - a_star)
+      CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
 
       ## natural direct effect
-      varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- as.vector(NDE) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varNDE)) * abs(a - a_star)
+      CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
 
       ## natural indirect effect
-      varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- as.vector(NIE) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varNIE))
+      CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
 
       ## total effect
-      varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- as.vector(TE) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varTE))
+      CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
+
     }
 
   } else if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
@@ -339,91 +234,53 @@ mediator <- function(data,
     # calculate effect estimates
 
     ## controlled direct effect
-    CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
-    CDE <- exp(CDE)
+    CDE <- controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
     ## natural direct effect
-    NDE <- (theta1 + theta3 * (beta0 + beta1 * a_star + betasum +
-                                 (theta2 * sigmaV))) * (a - a_star) +
-      (0.5 * (theta3^2) * sigmaV) * (a^2 - a_star^2)
-    NDE <- exp(NDE)
+    NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                 beta1, a_star, betasum, sigmaV,
+                                 out.reg, med.reg)
 
     ## natural indirect effect
-    NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
-    NIE <- exp(NIE)
+    NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                   betasum, theta2, theta3, a)
 
     ## total effect
-    TE <- NDE * NIE
+    TE <-  total_effect(NDE, NIE, out.reg)
+
     ## proportion mediated
-    PM <- (NDE * (NIE - 1)) / (NDE * NIE - 1)
+    PM <- prop_mediated(NDE, NIE, out.reg, TE)
 
     # calculate GAMMA for SE
     if (boot_rep == 0) {
       ## controlled direct effect
-      gCDE <- c(0, 0,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0, 1, 0, m,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0)
-      gCDE <- gCDE[!is.na(gCDE)]
+      gCDE <- gamma_cde(betameans, a, a_star, m, out.reg, med.reg)
+
       ## natural direct effect
-      gNDE <- c(theta3,
-                theta3 * a_star,
-                if (length(betameans)) theta3 * t(betameans) else NA,
-                0, 1,
-                theta3 * sigmaV,
-                (beta0 + beta1 * a_star + betasum + theta2 * sigmaV +
-                   theta3 * sigmaV * (a + a_star)), # C = c?
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                theta3 * theta2 + 0.5 * (theta3^2) * (a + a_star))
-      gNDE <- gNDE[!is.na(gNDE)]
+      gNDE <- gamma_nde(out.reg, med.reg, theta2, theta3, a, beta0,
+                        beta1, a_star, betasum, betameans, sigmaV)
 
       ## natural indirect effect
-      gNIE <- c(0,
-                theta2 + theta3 * a,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0, 0,
-                beta1,
-                beta1 * a,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0)
-      gNIE <- gNIE[!is.na(gNIE)]
+      gNIE <- gamma_nie(beta0, beta1, a, betasum, a_star, out.reg,
+                        med.reg, theta2, theta3, betameans)
 
       ## total effect
-      gTE <- c(theta3,
-               theta3 * (a + a_star) + theta2,
-               if (length(betameans)) theta3 * t(betameans) else NA,
-               0, 1,
-               theta3 * sigmaV + beta1,
-               beta0 + beta1 * (a + a_star) + betasum + theta2 * sigmaV +
-                 theta3 * sigmaV * (a^2 - a_star^2),
-               if (length(betameans)) rep(0, length(betameans)) else NA,
-               0.5 * (theta3^2) * (a^2 - a_star^2))
-      gTE <- gTE[!is.na(gTE)]
+      gTE <- gamma_te(gNDE, gNIE, beta0, beta1, a, betasum, a_star,
+                      theta3, theta2, betameans, out.reg, med.reg, sigmaV)
 
       # calculate CI using delta method
 
       ## controlled direct effect
-      varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- log(CDE) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varCDE)) * (a - a_star)
-      CI_CDE <- exp(CI_CDE)
+      CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
 
       ## natural direct effect
-      varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- as.vector(log(NDE)) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varNDE)) * (a - a_star)
-      CI_NDE <- exp(CI_NDE)
+      CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
 
       ## natural indirect effect
-      varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- exp(as.vector(log(NIE)) + c(-1, 1) * stats::qnorm(.975) *
-                      as.vector(sqrt(varNIE)) * (a - a_star))
+      CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
 
       ## total effect
-      varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- exp(as.vector(log(TE)) + c(-1, 1) * stats::qnorm(.975) *
-                     as.vector(sqrt(varTE)) * (a - a_star))
+      CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
 
     }
 
@@ -432,82 +289,54 @@ mediator <- function(data,
     # calculate effect estimates
 
     ## controlled direct effect
-    CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
+    CDE <- controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
     ## natural direct effect
-    NDE <- (theta1 + theta3 * beta0 + theta3 * beta1 * a_star + theta3 *
-              betasum) * (a - a_star)
+    NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                 beta1, a_star, betasum, sigmaV,
+                                 out.reg, med.reg)
 
     ## natural indirect effect
-    NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
+    NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                   betasum, theta2, theta3, a)
 
     ## total effect
-    TE <- NDE + NIE
+    TE <-  total_effect(NDE, NIE, out.reg)
 
     ## proportion mediated
-    PM <- NIE / TE
+    PM <- prop_mediated(NDE, NIE, out.reg, TE)
 
     # calculate GAMMA for SE
     if (boot_rep == 0) {
 
       ## controlled direct effect
-      gCDE <- c(0, 0,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0, 1, 0,
-                m,
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gCDE <- gCDE[!is.na(gCDE)]
+      gCDE <- gamma_cde(betameans, a, a_star, m, out.reg, med.reg)
 
       ## natural direct effect
-      gNDE <- c(theta3,
-                theta3 * a_star,
-                if (length(betameans)) t(theta3 * t(betameans)) else NA,
-                0, 1, 0,
-                beta0 + beta1 * a_star + betasum,
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gNDE <- gNDE[!is.na(gNDE)]
+      gNDE <- gamma_nde(out.reg, med.reg, theta2, theta3, a, beta0,
+                        beta1, a_star, betasum, betameans, sigmaV)
 
       ## pure natural indirect effect
-      gNIE <- c(0,
-                theta2 + theta3 * a_star,
-                if (length(betameans)) rep(0, length(betameans)) else NA,
-                0, 0,
-                beta1,
-                beta1 * a_star,
-                if (length(betameans)) rep(0, length(betameans)) else NA)
-      gNIE <- gNIE[!is.na(gNIE)]
+      gNIE <- gamma_nie(beta0, beta1, a, betasum, a_star, out.reg,
+                        med.reg, theta2, theta3, betameans)
 
       ## total effects
-      gTE <- c(theta3,
-               theta3 * (a + a_star) + theta2,
-               if (length(betameans)) theta3 %*% t(betameans) else NA,
-               0, 1,
-               beta1,
-               beta0 + beta1 * (a + a_star) + betasum,
-               if (length(betameans)) rep(0, length(betameans)) else NA)
-      gTE <- gTE[!is.na(gTE)]
+      gTE <- gamma_te(gNDE, gNIE, beta0, beta1, a, betasum, a_star,
+                      theta3, theta2, betameans, out.reg, med.reg, sigmaV)
 
       # delta method of calculating confidence intervals
 
       ## controlled direct effect
-      varCDE <- t(gCDE) %*% Sigma %*% gCDE
-      CI_CDE <- CDE + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varCDE)) * abs(a - a_star)
+      CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
 
       ## natural direct effect
-      varNDE <- t(gNDE) %*% Sigma %*% gNDE
-      CI_NDE <- as.vector(NDE) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varNDE)) * abs(a - a_star)
+      CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
 
       ## natural indirect effect
-      varNIE <- t(gNIE) %*% Sigma %*% gNIE
-      CI_NIE <- NIE + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varNIE)) * abs(a - a_star)
+      CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
 
       ## total effect
-      varTE <- t(gTE) %*% Sigma %*% gTE
-      CI_TE <- as.vector(TE) + c(-1, 1) * stats::qnorm(.975) *
-        as.vector(sqrt(varTE)) * abs(a - a_star)
+      CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
 
     }
 
@@ -525,18 +354,19 @@ mediator <- function(data,
         out <- stats::update(out.model, data = d)
         med <- stats::update(med.model, data = d)
 
-        cmeans <- d %>%
-          dplyr::select_if(is.numeric) %>%
-          purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
-        cmodes <- d %>%
-          dplyr::select_if(purrr::negate(is.numeric)) %>%
-          purrr::map_chr(~{
-            ux <- unique(.x)
-            ux[which.max(tabulate(match(.x, ux)))]
-          })
+        # cmeans <- d %>%
+        #   dplyr::select_if(is.numeric) %>%
+        #   purrr::map_dbl(~mean(.x, na.rm = TRUE)) # mean value for all numeric values
+        # cmodes <- d %>%
+        #   dplyr::select_if(purrr::negate(is.numeric)) %>%
+        #   purrr::map_chr(~{
+        #     ux <- unique(.x)
+        #     ux[which.max(tabulate(match(.x, ux)))]
+        #   })
 
         betas <- stats::coef(med) # coefficients from mediation model
-        beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med, d)
+        # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med, d)
+        beta_info <- cov_pred(treat, mediator, med, d)
         betasum <- sum(beta_info$betasum, na.rm=TRUE)
         betameans <- beta_info$betamean
         cnames <- names(betameans)
@@ -592,90 +422,76 @@ mediator <- function(data,
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
-          CDE <- exp(CDE)
+          CDE <- controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
           ## natural direct effect
-          NDEnum <- exp(theta1 * a) * exp_sum_1(theta2, theta3 * a, beta0,
-                                                beta1 * a_star, betasum)
-          NDEden <- exp(theta1 * a_star) * exp_sum_1(theta2, theta3 * a_star,
-                                                     beta0, beta1 * a_star,
-                                                     betasum)
-          NDE <- NDEnum / NDEden
-
-          rm(NDEnum, NDEden)
+          NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                       beta1, a_star, betasum, sigmaV,
+                                       out.reg, med.reg)
 
           ## natural indirect effect
-          NIEnum <- exp_sum_1(beta0, beta1 * a_star, betasum) *
-            exp_sum_1(theta2, theta3 * a, beta0, beta1 * a, betasum)
-          NIEden <- exp_sum_1(beta0, beta1 * a, betasum) *
-            exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
-
-          NIE <- as.vector(NIEnum / NIEden)
-
-          rm(NIEnum, NIEden)
+          NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                         betasum, theta2, theta3, a)
 
           ## total effect
-          TE <- NDE * NIE
+          TE <-  total_effect(NDE, NIE, out.reg)
 
         } else if (out.reg == "linear" & med.reg == "logistic") {
 
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
+          CDE <-  controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
           ## natural direct effect
-          NDE <- theta1 * (a - a_star) + (theta3 * (a - a_star)) *
-            ((exp_sum(beta0, beta1 * a_star, betasum)) /
-               exp_sum_1(beta0, beta1 * a_star, betasum))
+          NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                       beta1, a_star, betasum, sigmaV,
+                                       out.reg, med.reg)
 
           ## natural indirect effect
-          NIE <- (theta2 + theta3 * a) * ((exp_sum(beta0, beta1 * a, betasum) /
-                                             exp_sum_1(beta0, beta1 * a, betasum)) -
-                                            (exp_sum(beta0, beta1 * a_star, betasum) /
-                                               exp_sum_1(beta0, beta1 * a_star, betasum)))
+          NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                         betasum, theta2, theta3, a)
 
           ## total effect
-          TE <- NDE + NIE
+          TE <-  total_effect(NDE, NIE, out.reg)
 
         } else if (out.reg == "logistic" & med.reg == "linear") {
 
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <-  as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
-          CDE <- exp(CDE)
+          CDE <-  controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
           ## natural direct effect
-          NDE <- (theta1 + theta3 * (beta0 + beta1 * a_star + betasum +
-                                       (theta2 * sigmaV))) * (a - a_star) +
-            (0.5 * (theta3^2) * sigmaV) * (a^2 - a_star^2)
-          NDE <- exp(NDE)
+          NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                       beta1, a_star, betasum, sigmaV,
+                                       out.reg, med.reg)
 
           ## natural indirect effect
-          NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
-          NIE <- exp(NIE)
+          NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                         betasum, theta2, theta3, a)
 
           ## total effect
-          TE <- NDE * NIE
+          TE <-  total_effect(NDE, NIE, out.reg)
 
         } else {
 
           # calculate effect estimates
 
           ## controlled direct effect
-          CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
+          CDE <- controlled_direct_effect(theta1, a, a_star, theta3, m, out.reg)
 
           ## natural direct effect
-          NDE <- (theta1 + theta3 * beta0 + theta3 * beta1 * a_star + theta3 *
-                    betasum) * (a - a_star)
+          NDE <- natural_direct_effect(theta1, a, theta2, theta3, beta0,
+                                       beta1, a_star, betasum, sigmaV,
+                                       out.reg, med.reg)
 
           ## natural indirect effect
-          NIE <- (theta2 * beta1 + theta3 * beta1 * a) * (a - a_star)
+          NIE <- natural_indirect_effect(out.reg, med.reg, beta0, beta1, a_star,
+                                         betasum, theta2, theta3, a)
 
           ## total effect
-          TE <- NDE + NIE
+          TE <-  total_effect(NDE, NIE, out.reg)
 
         }
 
