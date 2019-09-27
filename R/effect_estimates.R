@@ -1,4 +1,4 @@
-controlled_direct_effect <- function(theta1, a, a_star, theta3, m, out.reg) {
+controlled_direct_effect <- function(theta1, a, a_star, theta3, m, out.reg, ...) {
 
   CDE <- as.numeric(theta1 * (a - a_star) + theta3 * m * (a - a_star))
 
@@ -41,7 +41,7 @@ prop_mediated <- function(NDE, NIE, out.reg, TE) {
 
 natural_direct_effect <- function(theta1, a, theta2, theta3, beta0,
                                   beta1, a_star, betasum, sigmaV,
-                                  out.reg, med.reg) {
+                                  out.reg, med.reg, ...) {
 
   if (out.reg %in% c("logistic","coxph") & med.reg == "logistic") {
 
@@ -76,7 +76,7 @@ natural_direct_effect <- function(theta1, a, theta2, theta3, beta0,
 }
 
 natural_indirect_effect <- function(out.reg, med.reg, beta0, beta1, a_star,
-                                    betasum, theta2, theta3, a){
+                                    betasum, theta2, theta3, a, ...){
   if (out.reg %in% c("logistic","coxph") & med.reg == "logistic") {
 
     NIEnum <- exp_sum_1(beta0, beta1 * a_star, betasum) *

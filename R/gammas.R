@@ -1,4 +1,4 @@
-gamma_cde <- function(betameans, a, a_star, m, out.reg, med.reg){
+gamma_cde <- function(betameans, a, a_star, m, out.reg, med.reg, ...){
   if (out.reg %in% c("logistic","coxph") & med.reg == "logistic"){
     gCDE <- c(0, 0,
               if (length(betameans)) rep(0, length(betameans)) else NA,
@@ -27,7 +27,7 @@ gamma_cde <- function(betameans, a, a_star, m, out.reg, med.reg){
 }
 
 gamma_nde <- function(out.reg, med.reg, theta2, theta3, a, beta0,
-                      beta1, a_star, betasum, betameans, sigmaV){
+                      beta1, a_star, betasum, betameans, sigmaV, ...){
   if (out.reg %in% c("logistic","coxph") & med.reg == "logistic") {
     A <- exp_sum(theta2, theta3 * a, beta0, beta1 * a_star, betasum) /
       exp_sum_1(theta2, theta3 * a, beta0, beta1 * a_star, betasum)
@@ -79,7 +79,7 @@ gamma_nde <- function(out.reg, med.reg, theta2, theta3, a, beta0,
 }
 
 gamma_nie <- function(beta0, beta1, a, betasum, a_star, out.reg,
-                      med.reg, theta2, theta3, betameans){
+                      med.reg, theta2, theta3, betameans, ...){
 
   K <- exp_sum(beta0, beta1 * a, betasum) /
     exp_sum_1(beta0, beta1 * a, betasum)
@@ -145,7 +145,7 @@ gamma_nie <- function(beta0, beta1, a, betasum, a_star, out.reg,
 }
 
 gamma_te <- function(gNDE, gNIE, beta0, beta1, a, betasum, a_star,
-                     theta3, theta2, betameans, out.reg, med.reg, sigmaV){
+                     theta3, theta2, betameans, out.reg, med.reg, sigmaV, ...){
   if (out.reg %in% c("logistic","coxph") & med.reg == "logistic") {
 
     gTE <- gNDE + gNIE
