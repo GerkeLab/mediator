@@ -93,7 +93,6 @@ mediator <- function(data,
   ##### ----------------------------------------------------------------- #####
   # Calculate effect estimates and confidence intervals (delta method) --------
   ##### ----------------------------------------------------------------- #####
-  # if (out.reg %in% c("logistic","coxph") & med.reg == "logistic") {
 
     # calculate effect estimates
     ## controlled direct effect
@@ -141,156 +140,6 @@ mediator <- function(data,
 
     }
 
-  # } else if (out.reg == "linear" & med.reg == "logistic") {
-  #
-  #   # calculate effect estimates
-  #
-  #   ## controlled direct effect
-  #   CDE <- do.call(controlled_direct_effect, arg_list)
-  #
-  #   ## natural direct effect
-  #   NDE <- do.call(natural_direct_effect, arg_list)
-  #
-  #   ## natural indirect effect
-  #   NIE <- do.call(natural_indirect_effect, arg_list)
-  #
-  #   ## total effect
-  #   TE <- total_effect(NDE, NIE, out.reg)
-  #
-  #   ## proportion mediated
-  #   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  #
-  #   # calculate GAMMA for SE
-  #   if (boot_rep == 0) {
-  #
-  #     ## controlled direct effect
-  #     gCDE <- do.call(gamma_cde, arg_list)
-  #
-  #     ## natural direct effect
-  #     gNDE <- do.call(gamma_nde, arg_list)
-  #
-  #     ## natural indirect effect
-  #     gNIE <- do.call(gamma_nie, arg_list)
-  #
-  #     ## total effect - exchange A for Q 07/01/2019
-  #     gTE <- do.call(gamma_te, c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
-  #
-  #     # delta method of calculating confidence intervals
-  #
-  #     ## controlled direct effect
-  #     CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
-  #
-  #     ## natural direct effect
-  #     CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
-  #
-  #     ## natural indirect effect
-  #     CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
-  #
-  #     ## total effect
-  #     CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
-  #
-  #   }
-  #
-  # } else if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
-  #
-  #   # calculate effect estimates
-  #
-  #   ## controlled direct effect
-  #   CDE <- do.call(controlled_direct_effect, arg_list)
-  #
-  #   ## natural direct effect
-  #   NDE <- do.call(natural_direct_effect, arg_list)
-  #
-  #   ## natural indirect effect
-  #   NIE <- do.call(natural_indirect_effect, arg_list)
-  #
-  #   ## total effect
-  #   TE <-  total_effect(NDE, NIE, out.reg)
-  #
-  #   ## proportion mediated
-  #   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  #
-  #   # calculate GAMMA for SE
-  #   if (boot_rep == 0) {
-  #     ## controlled direct effect
-  #     gCDE <- do.call(gamma_cde, arg_list)
-  #
-  #     ## natural direct effect
-  #     gNDE <- do.call(gamma_nde, arg_list)
-  #
-  #     ## natural indirect effect
-  #     gNIE <- do.call(gamma_nie, arg_list)
-  #
-  #     ## total effect
-  #     gTE <- do.call(gamma_te, c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
-  #
-  #     # calculate CI using delta method
-  #
-  #     ## controlled direct effect
-  #     CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
-  #
-  #     ## natural direct effect
-  #     CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
-  #
-  #     ## natural indirect effect
-  #     CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
-  #
-  #     ## total effect
-  #     CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
-  #
-  #   }
-  #
-  # } else {
-  #
-  #   # calculate effect estimates
-  #
-  #   ## controlled direct effect
-  #   CDE <- do.call(controlled_direct_effect, arg_list)
-  #
-  #   ## natural direct effect
-  #   NDE <- do.call(natural_direct_effect, arg_list)
-  #
-  #   ## natural indirect effect
-  #   NIE <- do.call(natural_indirect_effect, arg_list)
-  #
-  #   ## total effect
-  #   TE <-  total_effect(NDE, NIE, out.reg)
-  #
-  #   ## proportion mediated
-  #   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  #
-  #   # calculate GAMMA for SE
-  #   if (boot_rep == 0) {
-  #
-  #     ## controlled direct effect
-  #     gCDE <- do.call(gamma_cde, arg_list)
-  #
-  #     ## natural direct effect
-  #     gNDE <- do.call(gamma_nde, arg_list)
-  #
-  #     ## pure natural indirect effect
-  #     gNIE <- do.call(gamma_nie, arg_list)
-  #
-  #     ## total effects
-  #     gTE <- do.call(gamma_te, c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
-  #
-  #     # delta method of calculating confidence intervals
-  #
-  #     ## controlled direct effect
-  #     CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
-  #
-  #     ## natural direct effect
-  #     CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
-  #
-  #     ## natural indirect effect
-  #     CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
-  #
-  #     ## total effect
-  #     CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
-  #
-  #   }
-  #
-  # }
     ##### ------------------------------------------------------------------------------ #####
     # CI using boostrapping
     ##### ------------------------------------------------------------------------------ #####
@@ -337,8 +186,6 @@ mediator <- function(data,
         arg_list <- list(theta1, theta2, theta3, beta0, beta1, a, a_star, m,
                          betasum, sigmaV, out.reg, med.reg)
 
-        # if (out.reg == "logistic" & med.reg == "logistic") {
-
           # calculate effect estimates
 
           ## controlled direct effect
@@ -352,56 +199,6 @@ mediator <- function(data,
 
           ## total effect
           TE <-  total_effect(NDE, NIE, out.reg)
-
-        # } else if (out.reg == "linear" & med.reg == "logistic") {
-        #
-        #   # calculate effect estimates
-        #
-        #   ## controlled direct effect
-        #   CDE <- do.call(controlled_direct_effect, arg_list)
-        #
-        #   ## natural direct effect
-        #   NDE <- do.call(natural_direct_effect, arg_list)
-        #
-        #   ## natural indirect effect
-        #   NIE <- do.call(natural_indirect_effect, arg_list)
-        #
-        #   ## total effect
-        #   TE <-  total_effect(NDE, NIE, out.reg)
-        #
-        # } else if (out.reg == "logistic" & med.reg == "linear") {
-        #
-        #   # calculate effect estimates
-        #
-        #   ## controlled direct effect
-        #   CDE <- do.call(controlled_direct_effect, arg_list)
-        #
-        #   ## natural direct effect
-        #   NDE <- do.call(natural_direct_effect, arg_list)
-        #
-        #   ## natural indirect effect
-        #   NIE <- do.call(natural_indirect_effect, arg_list)
-        #
-        #   ## total effect
-        #   TE <-  total_effect(NDE, NIE, out.reg)
-        #
-        # } else {
-        #
-        #   # calculate effect estimates
-        #
-        #   ## controlled direct effect
-        #   CDE <- do.call(controlled_direct_effect, arg_list)
-        #
-        #   ## natural direct effect
-        #   NDE <- do.call(natural_direct_effect, arg_list)
-        #
-        #   ## natural indirect effect
-        #   NIE <- do.call(natural_indirect_effect, arg_list)
-        #
-        #   ## total effect
-        #   TE <-  total_effect(NDE, NIE, out.reg)
-        #
-        # }
 
         val <- c(CDE, NDE, NIE, TE)
 
