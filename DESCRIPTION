@@ -23,8 +23,9 @@ RoxygenNote: 6.1.1
 Depends: R (>= 2.10)
 Suggests: 
     testthat,
-    knitr
+    knitr,
+    survival
 VignetteBuilder:
     knitr
-URL: http://github.com/jhcreed/mediator
-BugReports: http://github.com/jhcreed/mediator/issues
+URL: http://github.com/gerkelab/mediator
+BugReports: http://github.com/gerkelab/mediator/issues
