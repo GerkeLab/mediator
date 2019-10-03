@@ -217,27 +217,27 @@ mediator <- function(data,
                   boot::boot.ci(boot_results, index = 2, type = "bca")$bca[[5]])
       CI_NIE <- c(boot::boot.ci(boot_results, index = 3, type = "bca")$bca[[4]],
                   boot::boot.ci(boot_results, index = 3, type = "bca")$bca[[5]])
-      CI_TE <- c(boot::boot.ci(boot_results, index = 4, type = "bca")$bca[[4]],
-                 boot::boot.ci(boot_results, index = 4, type = "bca")$bca[[5]])
+      CI_TE  <- c(boot::boot.ci(boot_results, index = 4, type = "bca")$bca[[4]],
+                  boot::boot.ci(boot_results, index = 4, type = "bca")$bca[[5]])
 
     }
 
   # }
 
-  output <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE",
-                                           "Total Effect", "Proportion Mediated"),
-                                Estimate = c(round(CDE, 5), round(NDE, 5),
-                                             round(NIE, 5), round(TE, 5),
-                                             round(PM, 5)),
-                                `Lower 95% CI` = c(round(CI_CDE[[1]], 5),
-                                                   round(CI_NDE[[1]], 5),
-                                                   round(CI_NIE[[1]], 5),
-                                                   round(CI_TE[[1]], 5), NA),
-                                `Upper 95% CI` = c(round(CI_CDE[[2]], 5),
-                                                   round(CI_NDE[[2]], 5),
-                                                   round(CI_NIE[[2]], 5),
-                                                   round(CI_TE[[2]], 5), NA)))
-  rownames(output) <- NULL
+  output <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
+                               "Total Effect", "Proportion Mediated"),
+                   Estimate = c(round(CDE, 5), round(NDE, 5),
+                                round(NIE, 5), round(TE, 5),
+                                round(PM, 5)),
+                   `Lower 95% CI` = c(round(CI_CDE[[1]], 5),
+                                      round(CI_NDE[[1]], 5),
+                                      round(CI_NIE[[1]], 5),
+                                      round(CI_TE[[1]], 5), NA),
+                   `Upper 95% CI` = c(round(CI_CDE[[2]], 5),
+                                      round(CI_NDE[[2]], 5),
+                                      round(CI_NIE[[2]], 5),
+                                      round(CI_TE[[2]], 5), NA))
+  # rownames(output) <- NULL
 
   return(print(output))
 }
