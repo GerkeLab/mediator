@@ -1,5 +1,5 @@
 ---
-title: "mediator: an R package for implementing causal mediation analyses"
+title: "mediator: an R package for conducting causal mediation analyses"
 author: "Jordan Creed and Travis Gerke"
 output:
   pdf_document: default
@@ -11,50 +11,48 @@ hard wrap lines with the following:
 knitr::wrap_rmd(here::here("man", "bsp2020", "abstract.Rmd")) 
 -->
 
-**Background:** Mediation analysis allows users to examine the relationship
-between an exposure and outcome through an intermediate variables, the mediator
-variable, which can be used to further characterize the relationship between
-the exposure and outcome. The conterfactual framework of mediation analysis
-provides an extension of the work by Baron and Kenny by allowing for
-exposure-mediator interactions and the decomposition of the total effect into
+**Background:** A mediation analysis examines the extent to which the causal relationship
+between an exposure and outcome operates through an intermediate variable, known as a mediator.
+A recently developed counterfactual framing of mediation analysis --- referred to as _causal mediation analysis_ --- 
+extends traditional methods by allowing
+exposure-mediator interactions and appropriately decomposing the total effect into
 direct and indirect effects.
 
-Previously software for performing this type of analysis was made available as
-SAS and SPSS macros by Valeri and VanderWeele, while within R, the package
-`mediation` provides some of these functions but not all and uses a different
-set of terminology and framework.
+Current software implementations for causal mediation analysis are available as
+SAS and SPSS macros by Valeri and VanderWeele. Within R, the package
+`mediation` (Tingley et al.) provides a subset of similar functions, but uses a different
+estimation approach and set of terminology which are less familiar to public health researchers.
 
-We have created an R package `mediator` which provides point estimates and
-confidence intervals for the controlled direct effect (CDE), as well as the
-natural direct and indirect effects (NDE and NIE), total effect (TE) and
-proportion mediated (PM) under multiple conditions and allows, but does not
-require, interaction between the exposure and mediator variables.
+We present the R package `mediator`, which provides point estimates and
+confidence intervals for statistics of interest in a causal mediation analysis. 
+These include the controlled direct effect (CDE), natural direct and indirect effects (NDE and NIE), total effect (TE), and
+proportion mediated (PM). The package allows the user to specify whether an
+interaction between the exposure and mediator is assumed to exist. 
+In addition to offering the first R implementation of causal mediation analysis as described by VanderWeele (2015), our implementation offers substantial performance enhancements over existing SAS/SPSS macros.
 
-**Usage:** The package was developed using R v 3.6.1 and is available on github
-and can be installed and brought into the environment using the following
-commands `devtools::install_github("gerkelab/mediator") ; library(mediator)`.
+**Usage:** The package was developed using R v 3.6.1 and is currently available on GitHub.
+Installation and loading is accomplished with `devtools::install_github("gerkelab/mediator"); library(mediator)`.
 The `mediator` package allows for binary and continuous exposures, mediators
-and outcomes as well as survival outcomes.
+and outcomes, as well as survival outcomes.
 
-At a minimum users need to provide the data set for the analysis (`data = `), a
-model for the outcome and mediator (`out.model = ` and `med.model = `), and
-specify what type of models are being used (`out.reg = ` and `med.reg = `).
-Users also need to specify which variables are the treatment (`treat = `) and
-mediator (`mediator = `). The package assumes proper modeling on the part of
-the user. Additional options include setting the exposure level (`a =`), the
-compared exposure level (`a_star = `), the level of the mediator (`m = `) and
-the number of bootstrap replications for calculating the confidence interval
-(`boot_rep = `). The level of the mediator is used for calculating the CDE and
-thus there are as many potential values for the CDE as there are levels of the
-mediator. By default the function calculates confidence intervals using the
-Delta method, but by changing the number of bootstrap replicates the user
-alters how the confidence interval is calculated automatically.
+Use of the package is centered around the `mediator()` function. 
+Minimum inputs for functionality include the analytic data set (`data = `),
+generlized linear model specifications for the outcome and mediator (`out.model = ` and `med.model = `),
+and the treatment variable (`treat = `).
+Additional options include setting the exposure level (`a =`), the
+compared exposure level (`a_star = `), the level of the mediator (`m = `), and
+the number of bootstrap replications for calculating confidence intervals
+(`boot_rep = `). Fixed levels of the mediator are used for calculating CDE, hence,
+there are as many potential values for the CDE as there are levels of the
+mediator. By default the function calculates parametric confidence intervals using the
+Delta method, but user specification of nonzero bootstrap replicates automatically changes the method of confidence interval estimation to bootstrap.
 
-The function returns a tibble with the CDE, NDE, NIE, TE and their 95%
-confidence intervals along with the PM. Covariates for the returned effects are
-either the mean value (continuous) or the most common value (categorical).
+The function returns a tibble with the CDE, NDE, NIE, TE, and PM, along with 95%
+confidence intervals. Returned effects are
+estimated at either the mean value (continuous) or the most common value (categorical) of covariates which are not the mediator or exposure variables.
 
-**Example:** Using the Surveillance, Epidemiology, and End Results (SEER)
+**Example:** [Will rework to examine how the effect of smoking on pancreatic cancer survival is mediated by chronic pancreatitis.]
+Using the Surveillance, Epidemiology, and End Results (SEER)
 database, we examine the effect of race on insurance status and whether it is
 mediated through Yost Index, which is a census-track level composite measure of
 socio-economic status indicators. When setting the mediatior level (Yost index)
@@ -65,5 +63,5 @@ CI 0.43, 0.47, respectively). These results are compatible with the low
 proportion mediated of 0.06.
 
 **Conclusion:** The `mediator` R package provides an efficient mechanism for
-conducting casual mediation analyses and a useful tool in reproducible
+conducting causal mediation analyses and a useful tool in reproducible
 epidemiologic research.
