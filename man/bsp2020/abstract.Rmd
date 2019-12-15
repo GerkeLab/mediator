@@ -56,16 +56,15 @@ The function returns a tibble with the CDE, NDE, NIE, TE, and PM, along with
 value (continuous) or the most common value (categorical) of covariates which
 are not the mediator or exposure variables.
 
-**Example:** [Will rework to examine how the effect of smoking on pancreatic
-cancer survival is mediated by chronic pancreatitis.] Using the Surveillance,
-Epidemiology, and End Results (SEER) database, we examine the effect of race on
-insurance status and whether it is mediated through Yost Index, which is a
-census-track level composite measure of socio-economic status indicators. When
-setting the mediatior level (Yost index) equal to the median value in Caucasian
-and African American men, being African American was protective against being
-insured and roughly the same regardless of what Yost Index was set at (OR =
-0.44; 95% CI 0.42, 0.47 and OR = 0.45; 95% CI 0.43, 0.47, respectively). These
-results are compatible with the low proportion mediated of 0.06.
+**Example:**  Using data on pancreatic cancer from The Cancer Genome Atlas
+(TCGA), we examine the effect of sex on overall survival and whether it is
+mediated through smoking status. The proportion mediated is 0.09 and the 
+direct effect of sex on pancreatic cancer survival is 0.80 and the indirect
+effect of sex on survival through smoking is 0.98, with the combined
+total effect of 0.78. The controlled direct effect of male sex compared to 
+female sex when forcing smoking status as never smokers is 0.79, while 
+when setting smoking status as previous or current smoker the effect of 
+male sex on survival status is 0.82. 
 
 **Conclusion:** The `mediator` R package provides an efficient mechanism for
 conducting causal mediation analyses and a useful tool in reproducible
