@@ -12,14 +12,6 @@
 #'   Can be of class 'glm','lm'.
 #' @param treat A character string indicating the name of the
 #'   treatment/exposure variable used.
-#' @param mediator A character string indicating the name of the
-#'   mediator variable used.
-#' @param out.reg A character string indicating the type of
-#'   regression used in the outcome model. Can be either "logisitic",
-#'   "linear", or "coxph".
-#' @param med.reg A character string indicating the type of
-#'   regression used in the mediator model. Can be either "logisitic" or
-#'   "linear".
 #' @param a A numeric value indicating the exposure level. Default = 1
 #' @param a_star A numeric value indicating the compared exposure level.
 #'   Default = 0.
@@ -37,13 +29,34 @@ mediator <- function(data,
                      out.model,
                      med.model,
                      treat,
-                     mediator,
-                     out.reg = "logistic",
-                     med.reg = "logistic",
+                     # mediator,
+                     # out.reg = "logistic",
+                     # med.reg = "logistic",
                      a = 1,
                      a_star = 0,
                      m = 0,
                      boot_rep = 0){
+
+  # identifying mediator variable
+  mediator <- stringr::str_trim(gsub("~.*","",as.character(med.model$call)[2]))
+
+  # identifying out model type
+  out.reg <- if (class(out.model)[1] == "coxph") {
+    "coxph"
+  } else if (class(out.model)[1] == "lm") {
+      "linear"
+  } else if (class(out.model)[1] == "glm") {
+      if (out.model$family$family == "binomial") "logistic" else
+        "linear"
+  }
+
+  med.reg <- if (class(med.model)[1] == "lm") {
+    "linear"
+  } else if (class(med.model)[1] == "glm") {
+    if (med.model$family$family == "binomial") "logistic" else
+      "linear"
+  }
+
 
   # subset data to the set of variables from data which are relevant
   out_vars <- if (out.reg=="coxph") names(attr(out.model$terms,"dataClasses"))[-1] else

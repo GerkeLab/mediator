@@ -19,8 +19,9 @@ Imports:
     magrittr,
     dplyr,
     purrr,
-    tibble
-RoxygenNote: 6.1.1
+    tibble,
+    stringr
+RoxygenNote: 7.0.2
 Depends: R (>= 2.10)
 Suggests: 
     testthat,

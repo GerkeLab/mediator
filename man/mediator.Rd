@@ -4,9 +4,16 @@
 \alias{mediator}
 \title{Causal Mediation Analysis}
 \usage{
-mediator(data, out.model, med.model, treat, mediator,
-  out.reg = "logistic", med.reg = "logistic", a = 1, a_star = 0,
-  m = 0, boot_rep = 0)
+mediator(
+  data,
+  out.model,
+  med.model,
+  treat,
+  a = 1,
+  a_star = 0,
+  m = 0,
+  boot_rep = 0
+)
 }
 \arguments{
 \item{data}{Data set to use for analysis}
@@ -19,17 +26,6 @@ Can be of class 'glm','lm'.}
 
 \item{treat}{A character string indicating the name of the
 treatment/exposure variable used.}
-
-\item{mediator}{A character string indicating the name of the
-mediator variable used.}
-
-\item{out.reg}{A character string indicating the type of
-regression used in the outcome model. Can be either "logisitic",
-"linear", or "coxph".}
-
-\item{med.reg}{A character string indicating the type of
-regression used in the mediator model. Can be either "logisitic" or
-"linear".}
 
 \item{a}{A numeric value indicating the exposure level. Default = 1}
 
