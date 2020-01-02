@@ -21,7 +21,7 @@
 #'   When `boot_rep` = 0, the Delta method for calculating confidence
 #'   intervals is used. Default = 0.
 #'
-#' @return Data frame containing point estimates and 95 percent CI for the
+#' @return Tibble containing point estimates and 95 percent CI for the
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
 #' @export
@@ -29,9 +29,6 @@ mediator <- function(data,
                      out.model,
                      med.model,
                      treat,
-                     # mediator,
-                     # out.reg = "logistic",
-                     # med.reg = "logistic",
                      a = 1,
                      a_star = 0,
                      m = 0,

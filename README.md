@@ -48,14 +48,15 @@ mediator::mediator(data = example250,
                                    data = example250),
                    med.model = lm(y ~ x + c, 
                                   data = example250),
-                   treat = "x", mediator = "y",
-                   out.reg = "logistic", med.reg = "linear")
-##                Effect Estimate Lower 95% CI Upper 95% CI
-## 1                 CDE  0.42792      0.14331      1.27772
-## 2                 NDE  0.71508      0.20414      2.50483
-## 3                 NIE  1.06904      0.82487      1.38549
-## 4        Total Effect  0.76445      0.25065      2.33153
-## 5 Proportion Mediated -0.20959         <NA>         <NA>
+                   treat = "x")
+## # A tibble: 5 x 4
+##   Effect              Estimate `Lower 95% CI` `Upper 95% CI`
+##   <chr>                  <dbl>          <dbl>          <dbl>
+## 1 CDE                    0.428          0.143           1.28
+## 2 NDE                    0.715          0.204           2.50
+## 3 NIE                    1.07           0.825           1.39
+## 4 Total Effect           0.764          0.251           2.33
+## 5 Proportion Mediated   -0.210         NA              NA
 ```
 
 A data frame (printed to the console if not assigned to an object) is

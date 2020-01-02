@@ -3,11 +3,13 @@ output: github_document
 ---
 
 ```{r setup, include = FALSE}
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
+
 library(mediator)
 ```
 
@@ -38,15 +40,14 @@ In the above DAG the path for the NIE is shown in blue while the path for the ND
 
 The simplest use case of `mediator` would be as follows:
 
-```{r}
+```{r, example1}
 mediator::mediator(data = example250,
                    out.model = glm(cens ~ x + y + c + x*y, 
                                    family = "binomial",
                                    data = example250),
                    med.model = lm(y ~ x + c, 
                                   data = example250),
-                   treat = "x", mediator = "y",
-                   out.reg = "logistic", med.reg = "linear")
+                   treat = "x")
 ```
 
 A data frame (printed to the console if not assigned to an object) is returned containing the point estimates and 95% confidence intervals. 
