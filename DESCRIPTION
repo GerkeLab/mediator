@@ -24,7 +24,7 @@ Imports:
 RoxygenNote: 7.0.2
 Depends: R (>= 2.10)
 Suggests: 
-    testthat,
+    testthat (>= 2.1.0),
     knitr,
     survival
 VignetteBuilder:

@@ -25,14 +25,8 @@
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
 #' @export
-mediator <- function(data,
-                     out.model,
-                     med.model,
-                     treat,
-                     a = 1,
-                     a_star = 0,
-                     m = 0,
-                     boot_rep = 0){
+mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
+                     m = 0, boot_rep = 0){
 
   # identifying mediator variable
   mediator <- stringr::str_trim(gsub("~.*","",as.character(med.model$call)[2]))

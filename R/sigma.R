@@ -5,11 +5,11 @@ comb_sigma <- function(med.model, out.model, treat, mediator,
   SigmaT <- stats::vcov(out.model)
   # including 0 for variance for interaction if missing
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
+    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)+1))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
     dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
   } else if (out.reg == "coxph") {
-    SigmaT <- rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT)))
+    SigmaT <- rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT)+1))
     dimnames(SigmaT)[[1]][nrow(SigmaT)] <- "(Intercept)"
     dimnames(SigmaT)[[2]][1] <- "(Intercept)"
   } else {

@@ -1,6 +1,5 @@
-context("multiple covariates")
+context("confidence intervals")
 
-# import data for use in tests - roughly based off data from SAS macro --------
 load("test_dat.RData")
 
 # set uniform values to test across all types ---------------------------------
@@ -67,24 +66,53 @@ test_that("continuous outcome and mediator match SAS macro",{
 
   ## controlled direct effect
   CDE <- do.call(controlled_direct_effect, arg_list)
-  expect_equal(round(CDE, 6), 0.091774)
 
   ## natural direct effect
   NDE <- do.call(natural_direct_effect, arg_list)
-  expect_equal(round(as.numeric(NDE), 6), 0.084069)
 
   ## natural indirect effect
   NIE <- do.call(natural_indirect_effect, arg_list)
-  expect_equal(round(as.numeric(NIE), 6), -0.009772)
 
   ## total effect
   TE <- total_effect(NDE, NIE, out.reg)
-  expect_equal(round(as.numeric(TE), 6), 0.074297)
 
   ## proportion mediated
   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  expect_equal(round(as.numeric(PM), 5), -0.13153)
 
+  # calculate gammas ----------------------------------------------------------
+  gCDE <- do.call(gamma_cde, arg_list)
+
+  ## natural direct effect
+  gNDE <- do.call(gamma_nde, arg_list)
+
+  ## natural indirect effect
+  gNIE <- do.call(gamma_nie, arg_list)
+
+  ## total effect
+  gTE <- do.call(gamma_te,
+                 c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
+
+  # delta method of calculating confidence intervals ---------------------------
+
+  ## controlled direct effect
+  CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_CDE[[1]],5), -0.18535, tolerance = 0.00001)
+  expect_equal(round(CI_CDE[[2]],5), 0.36890, tolerance = 0.00001)
+
+  ## natural direct effect
+  CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NDE[[1]], 5), -0.19302, tolerance = 0.00001)
+  expect_equal(round(CI_NDE[[2]], 5), 0.36116, tolerance = 0.00001)
+
+  ## natural indirect effect
+  CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NIE[[1]], 5), -0.02038, tolerance = 0.00001)
+  expect_equal(round(CI_NIE[[2]], 5), 0.00083, tolerance = 0.00001)
+
+  ## total effect
+  CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_TE[[1]], 5), -0.20349, tolerance = 0.00001)
+  expect_equal(round(CI_TE[[2]], 5), 0.35208, tolerance = 0.00001)
 })
 
 test_that("binary outcome and continuous mediator match SAS macro",{
@@ -145,23 +173,53 @@ test_that("binary outcome and continuous mediator match SAS macro",{
 
   ## controlled direct effect
   CDE <-  do.call(controlled_direct_effect, arg_list)
-  expect_equal(round(CDE, 5), 0.42995)
 
   ## natural direct effect
   NDE <- do.call(natural_direct_effect, arg_list)
-  expect_equal(round(as.numeric(NDE), 5), 0.72323)
 
   ## natural indirect effect
   NIE <- do.call(natural_indirect_effect, arg_list)
-  expect_equal(round(as.numeric(NIE), 5), 1.05791, tolerance = 0.00001)
 
   ## total effect
   TE <- total_effect(NDE, NIE, out.reg)
-  expect_equal(round(as.numeric(TE), 5), 0.76512)
 
   ## proportion mediated
   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  expect_equal(round(as.numeric(PM), 5), -0.17833)
+
+  # calculate gammas ----------------------------------------------------------
+  gCDE <- do.call(gamma_cde, arg_list)
+
+  ## natural direct effect
+  gNDE <- do.call(gamma_nde, arg_list)
+
+  ## natural indirect effect
+  gNIE <- do.call(gamma_nie, arg_list)
+
+  ## total effect
+  gTE <- do.call(gamma_te,
+                 c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
+
+  # delta method of calculating confidence intervals ---------------------------
+
+  ## controlled direct effect
+  CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_CDE[[1]],5), 0.14373, tolerance = 0.00001)
+  expect_equal(round(CI_CDE[[2]],5), 1.28613, tolerance = 0.00001)
+
+  ## natural direct effect
+  CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NDE[[1]], 5), 0.20471, tolerance = 0.00001)
+  expect_equal(round(CI_NDE[[2]], 5), 2.55513, tolerance = 0.00001)
+
+  ## natural indirect effect
+  CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NIE[[1]], 5), 0.81617, tolerance = 0.00001)
+  expect_equal(round(CI_NIE[[2]], 5), 1.37127, tolerance = 0.00001)
+
+  ## total effect
+  CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_TE[[1]], 5), 0.25162, tolerance = 0.00001)
+  expect_equal(round(CI_TE[[2]], 5), 2.32655, tolerance = 0.00001)
 
 })
 
@@ -224,23 +282,54 @@ test_that("continuous outcome and binary mediator match SAS macro",{
 
   ## controlled direct effect
   CDE <- do.call(controlled_direct_effect, arg_list)
-  expect_equal(round(CDE, 6), 0.26042, tolerance = 0.00001)
 
   ## natural direct effect
   NDE <- do.call(natural_direct_effect, arg_list)
-  expect_equal(round(as.numeric(NDE), 6), 0.09575, tolerance = 0.00001)
 
   ## natural indirect effect
   NIE <- do.call(natural_indirect_effect, arg_list)
-  expect_equal(round(as.numeric(NIE), 6), -0.00369, tolerance = 0.00001)
 
   ## total effect
   TE <- total_effect(NDE, NIE, out.reg)
-  expect_equal(round(as.numeric(TE), 6), 0.09206, tolerance = 0.00001)
 
   ## proportion mediated
   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  expect_equal(round(as.numeric(PM), 5), -0.040117, tolerance = 0.00001)
+
+  # calculate gammas ----------------------------------------------------------
+  gCDE <- do.call(gamma_cde, arg_list)
+
+  ## natural direct effect
+  gNDE <- do.call(gamma_nde, arg_list)
+
+  ## natural indirect effect
+  gNIE <- do.call(gamma_nie, arg_list)
+
+  ## total effect
+  gTE <- do.call(gamma_te,
+                 c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
+
+  # delta method of calculating confidence intervals ---------------------------
+
+  ## controlled direct effect
+  CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_CDE[[1]],5), -0.12956, tolerance = 0.00001)
+  expect_equal(round(CI_CDE[[2]],5), 0.65040, tolerance = 0.00001)
+
+  ## natural direct effect
+  CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NDE[[1]], 5), -0.25349, tolerance = 0.00001)
+  expect_equal(round(CI_NDE[[2]], 5), 0.44499, tolerance = 0.00001)
+
+  ## natural indirect effect
+  CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NIE[[1]], 5), -0.03495, tolerance = 0.00001)
+  expect_equal(round(CI_NIE[[2]], 5), 0.02756, tolerance = 0.00001)
+
+  ## total effect
+  CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_TE[[1]], 5), -0.18416, tolerance = 0.00001)
+  expect_equal(round(CI_TE[[2]], 5), 0.36827, tolerance = 0.00001)
+
 })
 
 test_that("binary outcome and mediator match SAS macro",{
@@ -302,21 +391,52 @@ test_that("binary outcome and mediator match SAS macro",{
 
   ## controlled direct effect
   CDE <- do.call(controlled_direct_effect, arg_list)
-  expect_equal(round(CDE, 5), 0.54184, tolerance = 0.00001)
 
   ## natural direct effect
   NDE <- do.call(natural_direct_effect, arg_list)
-  expect_equal(round(as.numeric(NDE), 5), 0.61768, tolerance = 0.00001)
 
   ## natural indirect effect
   NIE <- do.call(natural_indirect_effect, arg_list)
-  expect_equal(round(as.numeric(NIE), 5), 1.00201, tolerance = 0.00001)
 
   ## total effect
   TE <- total_effect(NDE, NIE, out.reg)
-  expect_equal(round(as.numeric(TE), 5), 0.61892, tolerance = 0.00001)
 
   ## proportion mediated
   PM <- prop_mediated(NDE, NIE, out.reg, TE)
-  expect_equal(round(as.numeric(PM), 6), -0.003255, tolerance = 0.00001)
+
+  # calculate gammas ----------------------------------------------------------
+  gCDE <- do.call(gamma_cde, arg_list)
+
+  ## natural direct effect
+  gNDE <- do.call(gamma_nde, arg_list)
+
+  ## natural indirect effect
+  gNIE <- do.call(gamma_nie, arg_list)
+
+  ## total effect
+  gTE <- do.call(gamma_te,
+                 c(arg_list, list("gNDE" = gNDE, "gNIE" = gNIE)))
+
+  # delta method of calculating confidence intervals ---------------------------
+
+  ## controlled direct effect
+  CI_CDE <- delta_cde_nde(gCDE, Sigma, CDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_CDE[[1]],5), 0.16286, tolerance = 0.00001)
+  expect_equal(round(CI_CDE[[2]],5), 1.80266, tolerance = 0.00001)
+
+  ## natural direct effect
+  CI_NDE <- delta_cde_nde(gNDE, Sigma, NDE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NDE[[1]], 5), 0.25922, tolerance = 0.00001)
+  expect_equal(round(CI_NDE[[2]], 5), 1.47183, tolerance = 0.00001)
+
+  ## natural indirect effect
+  CI_NIE <- delta_nie(gNIE, Sigma, NIE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_NIE[[1]], 5), 0.90767, tolerance = 0.00001)
+  expect_equal(round(CI_NIE[[2]], 5), 1.10615, tolerance = 0.00001)
+
+  ## total effect
+  CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
+  expect_equal(round(CI_TE[[1]], 5), 0.25987, tolerance = 0.00001)
+  expect_equal(round(CI_TE[[2]], 5), 1.47404, tolerance = 0.00001)
+
 })
