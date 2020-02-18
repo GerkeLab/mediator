@@ -12,7 +12,7 @@ test_that("R function matches SAS macro",{
                          treat = "x",
                          a = 1, a_star = 0, m = 0, boot_rep = 0)
 
-  expect_equal(first_test, tibble(Effect = c("CDE", "NDE", "NIE",
+  expect_equal(first_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
                                              "Total Effect",
                                              "Proportion Mediated"),
                                   Estimate = c(0.09177, 0.08407, -0.00977,
@@ -32,7 +32,7 @@ test_that("R function matches SAS macro",{
                            treat = "x",
                            a = 1, a_star = 0, m = 0, boot_rep = 0)
 
-   expect_equal(second_test, tibble(Effect = c("CDE", "NDE", "NIE",
+   expect_equal(second_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
                                                "Total Effect",
                                                "Proportion Mediated"),
                                     Estimate = c(0.42995, 0.72323, 1.05792,
@@ -52,7 +52,7 @@ test_that("R function matches SAS macro",{
                           treat = "x",
                           a = 1, a_star = 0, m = 0, boot_rep = 0)
 
-   expect_equal(third_test, tibble(Effect = c("CDE", "NDE", "NIE",
+   expect_equal(third_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
                                                "Total Effect",
                                                "Proportion Mediated"),
                                    Estimate = c(0.26042, 0.09575, -0.00369,
@@ -74,7 +74,7 @@ test_that("R function matches SAS macro",{
                            m = 0,
                            boot_rep = 0)
 
-   expect_equal(fourth_test, tibble(Effect = c("CDE", "NDE", "NIE",
+   expect_equal(fourth_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
                                               "Total Effect",
                                               "Proportion Mediated"),
                                     Estimate = c(0.54184, 0.61768, 1.00201,
