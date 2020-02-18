@@ -1,6 +1,7 @@
 
 # mediator <img src="man/figures/hex.png" align="right" height="139" />
 
+
 The goal of `mediator` is to conduct causal mediation analysis under the
 counterfactual framework, allowing interation between the exposure and
 mediator \[Valeri 2013\]. Currently, `mediator` estimates the controlled
