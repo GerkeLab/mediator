@@ -11,6 +11,7 @@ vignette: >
 
 ```{r, include = FALSE}
 library(mediator)
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -60,8 +61,7 @@ In this vignette, we will :
 mediator(data=example250,
          out.model = lm(y ~ x + c + m + x*c, data = example250),
          med.model = lm(c ~ x + m, data = example250),
-         treat = "x", mediator = "c",
-         out.reg = "linear", med.reg = "linear",
+         treat = "x",
          a = 1, a_star = 0,
          m = 0,
          boot_rep = 0)
@@ -88,8 +88,7 @@ Below are examples of results from `mediator` (left) and `%mediation` (right) fo
 mediator(data=example250,
          out.model = lm(y ~ x + c + m + x*c, data = example250),
          med.model = lm(c ~ x + m, data = example250),
-         treat = "x", mediator = "c",
-         out.reg = "linear", med.reg = "linear")
+         treat = "x")
 ```
 
 ```{sas, eval = FALSE}
@@ -130,8 +129,7 @@ knitr::kable(list(r1, sas1))
 mediator(data = example250,
          out.model = glm(cens ~ x + m + c + x*m, data=example250, family="binomial"),
          med.model = glm(m ~ x + c, data = example250, family = "binomial"),
-         treat = "x", mediator = "m",
-         out.reg = "logistic", med.reg = "logistic")
+         treat = "x")
 ```
 
 ```{sas, eval = FALSE}
@@ -171,8 +169,7 @@ knitr::kable(list(r2, sas2))
 mediator(data = example250,
          out.model = lm(y ~ x + m + c + x*m, data = example250),
          med.model = glm(m ~ x + c, data = example250, family = "binomial"),
-         treat = "x", mediator = "m",
-         out.reg = "linear", med.reg = "logistic")
+         treat = "x")
 ```
 
 ```{sas, eval = FALSE}
@@ -212,8 +209,7 @@ knitr::kable(list(r3, sas3))
 mediator(data = example250,
          out.model = glm(cens ~ x + y + c + x*y, data = example250, family = "binomial"),
          med.model = lm(y ~ x + c, data = example250),
-         treat = "x", mediator = "y",
-         out.reg = "logistic", med.reg = "linear")
+         treat = "x")
 ```
 
 ```{sas, eval = FALSE}

@@ -15,13 +15,19 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     boot,
-    stats
-RoxygenNote: 6.1.1
+    stats,
+    magrittr,
+    dplyr,
+    purrr,
+    tibble,
+    stringr
+RoxygenNote: 7.0.2
 Depends: R (>= 2.10)
 Suggests: 
-    testthat,
-    knitr
+    testthat (>= 2.1.0),
+    knitr,
+    survival
 VignetteBuilder:
     knitr
-URL: http://github.com/jhcreed/mediator
-BugReports: http://github.com/jhcreed/mediator/issues
+URL: http://github.com/gerkelab/mediator
+BugReports: http://github.com/gerkelab/mediator/issues

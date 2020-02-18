@@ -1,9 +1,12 @@
+
 context("survival")
 
 # import data for use in tests - roughly based off data from SAS macro --------
 load("test_dat.RData")
 set.seed(8675309)
 test_dat$time <- round(abs(rnorm(n=nrow(test_dat)))*100)
+
+# library(survival)
 
 # test_dat2 <- test_dat
 # test_dat2$cens <- ifelse(test_dat2$cens==0,1,0)
@@ -29,83 +32,68 @@ test_that("coxph outcome and continuous mediator match SAS",{
   med.reg = "linear"
 
   # calculating values to use later on ----------------------------------------
-  betas <- coef(med.model) # coefficients from mediation model
-  cmeans <- apply(data, 2, function(x) mean(as.numeric(x), na.rm = TRUE)) # mean value for all values
-  betameans <- cmeans[which(names(cmeans) %in%
-                              names(betas)[!(names(betas) %in%
-                                               c("(Intercept)", treat))])] # subset to only covariates
-  betameans <- betameans[match(names(betas)[!(names(betas) %in% c("(Intercept)", treat))],
-                               names(betameans))] # put in order to match coefficients
-  betasum <- betameans %*% betas[names(betas)[!(names(betas) %in% c("(Intercept)", treat))]] # mean * coefficient from model
+  out_vars <- if (out.reg=="coxph") names(attr(out.model$terms,"dataClasses"))[-1] else
+    names(attr(out.model$terms,"dataClasses"))
 
-  # get covariate names -------------------------------------------------------
-  covmeans <- cmeans[which(names(cmeans) %in% names(betas)[!(names(betas) %in% c("(Intercept)", treat))])]
-  cnames <- names(covmeans)
+  var_set <- unique(c(out_vars,
+                      names(attr(med.model$terms,"dataClasses"))))
+  data <- data %>% dplyr::select(var_set)
 
-  # Covariance matrix for standar errors --------------------------------------
-  # set mediator covariance as 0
-  SigmaB <- vcov(med.model)
-  SigmaT <- vcov(out.model)
+  betas <- stats::coef(med.model) # coefficients from mediation model
+  beta_info <- cov_pred(treat, mediator, med.model, data)
+  betasum <- sum(beta_info$betasum, na.rm=TRUE)
+  betameans <- beta_info$betamean
+
+  # get covariate names
+  cnames <- names(betameans)
+
+  # Covariance matrix for standar errors
+  sigmaV <- stats::sigma(med.model)^2
+  Sigma <- comb_sigma(med.model, out.model, treat, mediator,
+                      out.reg, cnames, med.reg)
+
+  # setting coefficients for no interaction = 0 -------------------------------
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
-    dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
-    dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
-  } else if (out.reg=="coxph") {
-    SigmaT <- suppressWarnings(rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT))))
-    dimnames(SigmaT)[[1]][nrow(SigmaT)] <- "(Intercept)"
-    dimnames(SigmaT)[[2]][1] <- "(Intercept)"
+    out.model$coefficients[paste0(treat, ":", mediator)] <- 0
   } else {
-    SigmaT <- SigmaT
-  }
-  SigmaT <- SigmaT[c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames),
-                   c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames)]
-  Sigma <- rbind(cbind(SigmaB, matrix(0, ncol = ncol(SigmaT), nrow = nrow(SigmaB))),
-                 cbind(matrix(0, ncol = ncol(SigmaB), nrow = nrow(SigmaT)), SigmaT))
-  rm(SigmaB, SigmaT)
-  # Sigma includes standard error only for logistic/coxph outcome and linear mediator
-  if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
-    sigmaV <- sigma(med.model)^2
-    Sigma <- rbind(cbind(Sigma, rep(0, nrow(Sigma))),
-                   c(rep(0, ncol(Sigma)), sigmaV))
-
-  } else {
-    Sigma <- Sigma
+    out.model$coefficients[paste0(treat, ":", mediator)] <-
+      out.model$coefficients[paste0(treat, ":", mediator)]
   }
 
+  # pulling coefficients from models
+  theta1 <- out.model$coefficients[treat]
+  theta2 <- out.model$coefficients[mediator]
+  theta3 <- out.model$coefficients[paste0(treat, ":", mediator)]
+
+  beta0 <- med.model$coefficients["(Intercept)"]
+  beta1 <- med.model$coefficients[treat]
+
+  arg_list <- list(theta1 = theta1, theta2 = theta2, theta3 = theta3,
+                   beta0 = beta0, beta1 = beta1,
+                   betasum = betasum, betameans = betameans,
+                   a = a, a_star = a_star, m = m, out.reg = out.reg,
+                   med.reg = med.reg,
+                   sigmaV = sigmaV)
   # calculate effect estimates ------------------------------------------------
 
   ## controlled direct effect
-  CDE <-  as.numeric(out.model$coefficients[treat] * (a - a_star) +
-                       out.model$coefficients[paste0(treat, ":", mediator)] *
-                       m * (a - a_star))
-  CDE <- exp(CDE)
+  CDE <-  do.call(controlled_direct_effect, arg_list)
   expect_equal(round(CDE, 5), 0.75787)
 
   ## natural direct effect
-  NDE <- (out.model$coefficients[treat] +
-            out.model$coefficients[paste0(treat, ":", mediator)] *
-            (med.model$coefficients["(Intercept)"] +
-               med.model$coefficients[treat] * a_star + betasum +
-               (out.model$coefficients[mediator] * sigmaV))) *
-    (a - a_star) + (0.5 * (out.model$coefficients[paste0(treat, ":", mediator)]^2) *
-                      sigmaV) * (a^2 - a_star^2)
-  NDE <- exp(NDE)
+  NDE <- do.call(natural_direct_effect, arg_list)
   expect_equal(round(as.numeric(NDE), 5), 0.69060)
 
   ## natural indirect effect
-  NIE <- (out.model$coefficients[mediator] *
-            med.model$coefficients[treat] +
-            out.model$coefficients[paste0(treat, ":", mediator)] *
-            med.model$coefficients[treat] * a) * (a - a_star)
-  NIE <- exp(NIE)
+  NIE <- do.call(natural_indirect_effect, arg_list)
   expect_equal(round(as.numeric(NIE), 5), 0.99912, tolerance = 0.00001)
 
   ## total effect
-  TE <- NDE * NIE
+  TE <- total_effect(NDE, NIE, out.reg)
   expect_equal(round(as.numeric(TE), 5), 0.68999)
 
   ## proportion mediated
-  PM <- (NDE * (NIE - 1)) / (NDE * NIE - 1)
+  PM <- prop_mediated(NDE, NIE, out.reg, TE)
   expect_equal(round(as.numeric(PM), 9), 0.001961653)
 
 })
@@ -122,96 +110,69 @@ test_that("coxph outcome and  binary mediator match SAS",{
   med.reg = "logistic"
 
   # calculating values to use later on ----------------------------------------
-  betas <- coef(med.model) # coefficients from mediation model
-  cmeans <- apply(data, 2, function(x) mean(as.numeric(x), na.rm = TRUE)) # mean value for all values
-  betameans <- cmeans[which(names(cmeans) %in%
-                              names(betas)[!(names(betas) %in%
-                                               c("(Intercept)", treat))])] # subset to only covariates
-  betameans <- betameans[match(names(betas)[!(names(betas) %in% c("(Intercept)", treat))],
-                               names(betameans))] # put in order to match coefficients
-  betasum <- betameans %*% betas[names(betas)[!(names(betas) %in% c("(Intercept)", treat))]] # mean * coefficient from model
+  out_vars <- if (out.reg=="coxph") names(attr(out.model$terms,"dataClasses"))[-1] else
+    names(attr(out.model$terms,"dataClasses"))
 
-  # get covariate names -------------------------------------------------------
-  covmeans <- cmeans[which(names(cmeans) %in% names(betas)[!(names(betas) %in% c("(Intercept)", treat))])]
-  cnames <- names(covmeans)
+  var_set <- unique(c(out_vars,
+                      names(attr(med.model$terms,"dataClasses"))))
+  data <- data %>% dplyr::select(var_set)
 
-  # Covariance matrix for standar errors --------------------------------------
-  # set mediator covariance as 0
-  SigmaB <- vcov(med.model)
-  SigmaT <- vcov(out.model)
+  betas <- stats::coef(med.model) # coefficients from mediation model
+  # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med.model, data)
+  beta_info <- cov_pred(treat, mediator, med.model, data)
+  betasum <- sum(beta_info$betasum, na.rm=TRUE)
+  betameans <- beta_info$betamean
+
+  # get covariate names
+  cnames <- names(betameans)
+
+  # Covariance matrix for standar errors
+  sigmaV <- stats::sigma(med.model)^2
+  Sigma <- comb_sigma(med.model, out.model, treat, mediator,
+                      out.reg, cnames, med.reg)
+
+  # setting coefficients for no interaction = 0 -------------------------------
   if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    SigmaT <- rbind(cbind(SigmaT,rep(0,nrow(SigmaT))),rep(0,nrow(SigmaT)))
-    dimnames(SigmaT)[[1]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
-    dimnames(SigmaT)[[2]][nrow(SigmaT)] <- paste0(treat, ":", mediator)
-  } else if (out.reg=="coxph") {
-    SigmaT <- suppressWarnings(rbind(cbind(rep(0,nrow(SigmaT)),SigmaT),rep(0,nrow(SigmaT))))
-    dimnames(SigmaT)[[1]][nrow(SigmaT)] <- "(Intercept)"
-    dimnames(SigmaT)[[2]][1] <- "(Intercept)"
+    out.model$coefficients[paste0(treat, ":", mediator)] <- 0
   } else {
-    SigmaT <- SigmaT
-  }
-  SigmaT <- SigmaT[c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames),
-                   c("(Intercept)", treat, mediator, paste0(treat, ":", mediator), cnames)]
-  Sigma <- rbind(cbind(SigmaB, matrix(0, ncol = ncol(SigmaT), nrow = nrow(SigmaB))),
-                 cbind(matrix(0, ncol = ncol(SigmaB), nrow = nrow(SigmaT)), SigmaT))
-  rm(SigmaB, SigmaT)
-  # Sigma includes standard error only for logistic/linear and no others
-  if (out.reg %in% c("logistic","coxph") & med.reg == "linear") {
-    sigmaV <- sigma(med.model)^2
-    Sigma <- rbind(cbind(Sigma, rep(0, nrow(Sigma))),
-                   c(rep(0, ncol(Sigma)), sigmaV))
-
-  } else {
-    Sigma <- Sigma
+    out.model$coefficients[paste0(treat, ":", mediator)] <-
+      out.model$coefficients[paste0(treat, ":", mediator)]
   }
 
+  # pulling coefficients from models
+  theta1 <- out.model$coefficients[treat]
+  theta2 <- out.model$coefficients[mediator]
+  theta3 <- out.model$coefficients[paste0(treat, ":", mediator)]
+
+  beta0 <- med.model$coefficients["(Intercept)"]
+  beta1 <- med.model$coefficients[treat]
+
+  arg_list <- list(theta1 = theta1, theta2 = theta2, theta3 = theta3,
+                   beta0 = beta0, beta1 = beta1,
+                   betasum = betasum, betameans = betameans,
+                   a = a, a_star = a_star, m = m, out.reg = out.reg,
+                   med.reg = med.reg,
+                   sigmaV = sigmaV)
   # calculate effect estimates ------------------------------------------------
 
   ## controlled direct effect
-  CDE <- as.numeric(out.model$coefficients[treat] * (a - a_star) +
-                      out.model$coefficients[paste0(treat, ":", mediator)] * m *
-                      (a - a_star))
-  CDE <- exp(CDE)
+  CDE <- do.call(controlled_direct_effect, arg_list)
   expect_equal(round(CDE, 5),0.63850, tolerance = 0.001)
 
   ## natural direct effect
-  NDEnum <- exp(out.model$coefficients[treat] * a) *
-    (1 + exp(out.model$coefficients[mediator] +
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-               a + med.model$coefficients["(Intercept)"] +
-               med.model$coefficients[treat] * a_star + betasum))
-  NDEden <- exp(out.model$coefficients[treat] * a_star) *
-    (1 + exp(out.model$coefficients[mediator] +
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-               a_star + med.model$coefficients["(Intercept)"] +
-               med.model$coefficients[treat] * a_star + betasum))
-  NDE <- NDEnum / NDEden
-  rm(NDEnum, NDEden)
+  NDE <- do.call(natural_direct_effect, arg_list)
   expect_equal(round(as.numeric(NDE), 5), 0.66819, tolerance = 0.001)
 
   ## natural indirect effect
-  NIEnum <- (1 + exp(med.model$coefficients["(Intercept)"] +
-                       med.model$coefficients[treat] * a_star + betasum)) *
-    (1 + exp(out.model$coefficients[mediator] +
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-               a + med.model$coefficients["(Intercept)"] +
-               med.model$coefficients[treat] * a + betasum))
-  NIEden <- (1 + exp(med.model$coefficients["(Intercept)"] +
-                       med.model$coefficients[treat] * a + betasum)) *
-    (1 + exp(out.model$coefficients[mediator] +
-               out.model$coefficients[paste0(treat, ":", mediator)] *
-               a + med.model$coefficients["(Intercept)"] +
-               med.model$coefficients[treat] * a_star + betasum))
-  NIE <- as.vector(NIEnum / NIEden)
-  rm(NIEnum, NIEden)
+  NIE <- do.call(natural_indirect_effect, arg_list)
   expect_equal(round(as.numeric(NIE), 5), 1.00014, tolerance = 0.001)
 
   ## total effect
-  TE <- NDE * NIE
+  TE <- total_effect(NDE, NIE, out.reg)
   expect_equal(round(as.numeric(TE), 5), 0.66828, tolerance = 0.001)
 
   ## proportion mediated
-  PM <- (NDE * (NIE - 1)) / (NDE * NIE - 1)
+  PM <- prop_mediated(NDE, NIE, out.reg, TE)
   expect_equal(round(as.numeric(PM), 9), -0.000274389, tolerance = 0.0001)
 })
 
