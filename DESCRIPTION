@@ -26,7 +26,8 @@ Depends: R (>= 2.10)
 Suggests: 
     testthat (>= 2.1.0),
     knitr,
-    survival
+    survival,
+    covr
 VignetteBuilder:
     knitr
 URL: http://github.com/gerkelab/mediator

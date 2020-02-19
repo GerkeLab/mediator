@@ -5,6 +5,8 @@
 
 [![Travis build
 status](https://travis-ci.org/GerkeLab/mediator.svg?branch=master)](https://travis-ci.org/GerkeLab/mediator)
+[![Codecov test
+coverage](https://codecov.io/gh/GerkeLab/mediator/branch/master/graph/badge.svg)](https://codecov.io/gh/GerkeLab/mediator?branch=master)
 <!-- badges: end -->
 
 The goal of `mediator` is to conduct causal mediation analysis under the
