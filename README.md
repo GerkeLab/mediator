@@ -1,6 +1,11 @@
 
 # mediator <img src="man/figures/hex.png" align="right" height="139" />
 
+<!-- badges: start -->
+
+[![Travis build
+status](https://travis-ci.org/GerkeLab/mediator.svg?branch=master)](https://travis-ci.org/GerkeLab/mediator)
+<!-- badges: end -->
 
 The goal of `mediator` is to conduct causal mediation analysis under the
 counterfactual framework, allowing interation between the exposure and
