@@ -243,5 +243,5 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
                                       round(CI_TE[[2]], 5), NA))
   # rownames(output) <- NULL
 
-  return(print(output))
+  return(output)
 }
