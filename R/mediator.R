@@ -64,7 +64,6 @@ mediator.default <- function(data,out.model, med.model, treat, a = 1, a_star = 0
   data <- data %>% dplyr::select(var_set)
 
   betas <- stats::coef(med.model) # coefficients from mediation model
-  # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med.model, data)
   beta_info <- cov_pred(treat, mediator_name, med.model, data)
   betasum <- sum(beta_info$betasum, na.rm=TRUE)
   betameans <- beta_info$betamean
@@ -164,7 +163,6 @@ mediator.default <- function(data,out.model, med.model, treat, a = 1, a_star = 0
         med <- stats::update(med.model, data = d)
 
         betas <- stats::coef(med) # coefficients from mediation model
-        # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med, d)
         beta_info <- cov_pred(treat, mediator_name, med, d)
         betasum <- sum(beta_info$betasum, na.rm=TRUE)
         betameans <- beta_info$betamean
@@ -215,8 +213,6 @@ mediator.default <- function(data,out.model, med.model, treat, a = 1, a_star = 0
         return(val)
       }
 
-
-      # library(boot)
       boot_results <- boot::boot(data = data, statistic = CIs, R = boot_rep,
                                  parallel = "multicore",
                                  ncpus = parallel::detectCores(logical = FALSE))
