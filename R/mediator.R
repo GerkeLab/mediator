@@ -50,8 +50,12 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
 
 
   # subset data to the set of variables from data which are relevant
-  out_vars <- if (out.reg=="coxph") names(attr(out.model$terms,"dataClasses"))[-1] else
-    names(attr(out.model$terms,"dataClasses"))
+  out_vars <- if (out.reg=="coxph") {
+    unlist(stringr::str_extract_all(names(attr(out.model$terms,"dataClasses")),
+                                    stringr::boundary("word")))[-1]
+  } else {
+      names(attr(out.model$terms,"dataClasses"))
+    }
 
   var_set <- unique(c(out_vars,
                       names(attr(med.model$terms,"dataClasses"))))
@@ -142,6 +146,9 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
       ## total effect
       CI_TE <- delta_te(gTE, Sigma, TE, a, a_star, out.reg, med.reg)
 
+      ## proportion mediated
+      CI_PM <- c(NA, NA)
+
     }
 
     ##### ------------------------------------------------------------------------------ #####
@@ -153,6 +160,7 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
       CIs <- function(data , indices, ...) {
 
         d <- data[indices, ]
+        p$tick()$print()
 
         out <- stats::update(out.model, data = d)
         med <- stats::update(med.model, data = d)
@@ -166,8 +174,8 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
 
         # Covariance matrix for standar errors
         sigmaV <- stats::sigma(med.model)^2
-        Sigma <- comb_sigma(med.model, out.model, treat, mediator,
-                            out.reg, cnames, med.reg)
+        # Sigma <- comb_sigma(med.model, out.model, treat, mediator,
+        #                     out.reg, cnames, med.reg)
 
         # setting coefficients for no interaction = 0 -------------------------------
         if(is.na(out$coefficients[paste0(treat, ":", mediator)])){
@@ -181,14 +189,17 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
         theta1 <- out$coefficients[treat]
         theta2 <- out$coefficients[mediator]
         theta3 <- out$coefficients[paste0(treat, ":", mediator)]
-        thetas <- list(theta1 = unname(theta1), theta2 = unname(theta2),
-                       theta3 = unname(theta3))
+        # thetas <- list(theta1 = unname(theta1), theta2 = unname(theta2),
+        #                theta3 = unname(theta3))
 
         beta0 <- med$coefficients["(Intercept)"]
         beta1 <- med$coefficients[treat]
 
-        arg_list <- list(theta1, theta2, theta3, beta0, beta1, a, a_star, m,
-                         betasum, sigmaV, out.reg, med.reg)
+        arg_list <- list(theta1 = theta1, theta2 = theta2,
+                         theta3 = theta3, beta0 = beta0,
+                         beta1 = beta1, a = a, a_star = a_star,
+                         m = m, betasum = betasum, sigmaV = sigmaV,
+                         out.reg = out.reg, med.reg = med.reg)
 
           # calculate effect estimates
 
@@ -204,11 +215,15 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
           ## total effect
           TE <-  total_effect(NDE, NIE, out.reg)
 
-        val <- c(CDE, NDE, NIE, TE)
+          ## total effect
+          PM <- prop_mediated(NDE, NIE, out.reg, TE)
+
+        val <- c(CDE, NDE, NIE, TE, PM)
 
         return(val)
       }
 
+      p <- progress_estimated(boot_rep+1)
 
       # library(boot)
       boot_results <- boot::boot(data = data, statistic = CIs, R = boot_rep,
@@ -223,6 +238,8 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
                   boot::boot.ci(boot_results, index = 3, type = "bca")$bca[[5]])
       CI_TE  <- c(boot::boot.ci(boot_results, index = 4, type = "bca")$bca[[4]],
                   boot::boot.ci(boot_results, index = 4, type = "bca")$bca[[5]])
+      CI_PM  <- c(boot::boot.ci(boot_results, index = 5, type = "bca")$bca[[4]],
+                  boot::boot.ci(boot_results, index = 5, type = "bca")$bca[[5]])
 
     }
 
@@ -236,11 +253,13 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
                    `Lower 95% CI` = c(round(CI_CDE[[1]], 5),
                                       round(CI_NDE[[1]], 5),
                                       round(CI_NIE[[1]], 5),
-                                      round(CI_TE[[1]], 5), NA),
+                                      round(CI_TE[[1]], 5),
+                                      round(CI_PM[[1]], 5)),
                    `Upper 95% CI` = c(round(CI_CDE[[2]], 5),
                                       round(CI_NDE[[2]], 5),
                                       round(CI_NIE[[2]], 5),
-                                      round(CI_TE[[2]], 5), NA))
+                                      round(CI_TE[[2]], 5),
+                                      round(CI_PM[[2]], 5)))
   # rownames(output) <- NULL
 
   return(output)

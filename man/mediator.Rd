@@ -40,7 +40,7 @@ When `boot_rep` = 0, the Delta method for calculating confidence
 intervals is used. Default = 0.}
 }
 \value{
-Data frame containing point estimates and 95 percent CI for the
+Tibble containing point estimates and 95 percent CI for the
   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 }
 \description{
