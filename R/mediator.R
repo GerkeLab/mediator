@@ -15,7 +15,7 @@
 #' @param a A numeric value indicating the exposure level. Default = 1
 #' @param a_star A numeric value indicating the compared exposure level.
 #'   Default = 0.
-#' @param m A numeric value indicating the level of the mediator. Default = 1
+#' @param m A numeric value indicating the level of the mediator. Default = 0.
 #' @param boot_rep A numeric value indicating the number of repetitions
 #'   to use when utalizing bootstrap to calculate confidence intervals.
 #'   When `boot_rep` = 0, the Delta method for calculating confidence
