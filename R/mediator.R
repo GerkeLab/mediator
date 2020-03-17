@@ -20,13 +20,17 @@
 #'   to use when utalizing bootstrap to calculate confidence intervals.
 #'   When `boot_rep` = 0, the Delta method for calculating confidence
 #'   intervals is used. Default = 0.
+#' @param pm_ci A logical indicator for calculating the CI for the proportion
+#'   mediated. Default = FALSE. Currently, the CI can only be determined using
+#'   boostrapping. If `pm_ci` = TRUE and `boot_rep` = 0 then 100 replicated
+#'   are automatically used.
 #'
 #' @return Tibble containing point estimates and 95 percent CI for the
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
 #' @export
-mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
-                     m = 0, boot_rep = 0){
+mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
+                     m = 0, boot_rep = 0, pm_ci = FALSE){
 
   # identifying mediator variable
   mediator <- stringr::str_trim(gsub("~.*","",as.character(med.model$call)[2]))
@@ -98,6 +102,13 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
                    med.reg = med.reg,
                    sigmaV = sigmaV)
 
+  boot_rep <- dplyr::case_when(
+    boot_rep == 0 & pm_ci == FALSE ~ 0,
+    boot_rep == 0 & pm_ci == TRUE ~ 100,
+    boot_rep != 0  ~ abs(boot_rep),
+    TRUE ~ boot_rep
+  )
+
   ##### ----------------------------------------------------------------- #####
   # Calculate effect estimates and confidence intervals (delta method) --------
   ##### ----------------------------------------------------------------- #####
@@ -157,16 +168,17 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
 
     if (boot_rep > 0) {
 
+      # pb <- progress::progress_bar$new()
+
       CIs <- function(data , indices, ...) {
 
-        d <- data[indices, ]
-        p$tick()$print()
+        d <- data[indices,]
+        pb$tick(0)
 
         out <- stats::update(out.model, data = d)
         med <- stats::update(med.model, data = d)
 
         betas <- stats::coef(med) # coefficients from mediation model
-        # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med, d)
         beta_info <- cov_pred(treat, mediator, med, d)
         betasum <- sum(beta_info$betasum, na.rm=TRUE)
         betameans <- beta_info$betamean
@@ -174,8 +186,6 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
 
         # Covariance matrix for standar errors
         sigmaV <- stats::sigma(med.model)^2
-        # Sigma <- comb_sigma(med.model, out.model, treat, mediator,
-        #                     out.reg, cnames, med.reg)
 
         # setting coefficients for no interaction = 0 -------------------------------
         if(is.na(out$coefficients[paste0(treat, ":", mediator)])){
@@ -189,8 +199,6 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
         theta1 <- out$coefficients[treat]
         theta2 <- out$coefficients[mediator]
         theta3 <- out$coefficients[paste0(treat, ":", mediator)]
-        # thetas <- list(theta1 = unname(theta1), theta2 = unname(theta2),
-        #                theta3 = unname(theta3))
 
         beta0 <- med$coefficients["(Intercept)"]
         beta1 <- med$coefficients[treat]
@@ -223,9 +231,9 @@ mediator <- function(data,out.model, med.model, treat, a = 1, a_star = 0,
         return(val)
       }
 
-      p <- progress_estimated(boot_rep+1)
 
-      # library(boot)
+      pb <- progress::progress_bar$new(total = boot_rep)
+
       boot_results <- boot::boot(data = data, statistic = CIs, R = boot_rep,
                                  parallel = "multicore",
                                  ncpus = parallel::detectCores(logical = FALSE))

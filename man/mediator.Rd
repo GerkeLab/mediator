@@ -12,7 +12,8 @@ mediator(
   a = 1,
   a_star = 0,
   m = 0,
-  boot_rep = 0
+  boot_rep = 0,
+  pm_ci = FALSE
 )
 }
 \arguments{
@@ -32,12 +33,17 @@ treatment/exposure variable used.}
 \item{a_star}{A numeric value indicating the compared exposure level.
 Default = 0.}
 
-\item{m}{A numeric value indicating the level of the mediator. Default = 1}
+\item{m}{A numeric value indicating the level of the mediator. Default = 0.}
 
 \item{boot_rep}{A numeric value indicating the number of repetitions
 to use when utalizing bootstrap to calculate confidence intervals.
 When `boot_rep` = 0, the Delta method for calculating confidence
 intervals is used. Default = 0.}
+
+\item{pm_ci}{A logical indicator for calculating the CI for the proportion
+mediated. Default = FALSE. Currently, the CI can only be determined using
+boostrapping. If `pm_ci` = TRUE and `boot_rep` = 0 then 100 replicated
+are automatically used.}
 }
 \value{
 Tibble containing point estimates and 95 percent CI for the
