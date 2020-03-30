@@ -251,17 +251,17 @@ knitr::kable(list(r4, sas4))
 
 Models for Y (outcome) and M (mediator), correctly specified
 
-![](https://latex.codecogs.com/gif.latex?E%5BY%7Ca%2Cm%2Cc%5D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+$$ E[Y|a,m,c] = \theta_{0} + \theta_{1}a + \theta_{2}m + \theta_{3}am + \theta'_{4}c $$
 
-![](https://latex.codecogs.com/gif.latex?E%5BM%7Ca%2Cc%5D%20%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+$$ E[M|a,c] = \beta_{0} + \beta_{1}a + \beta'_{2}c $$
 
 Average controlled direct effect, natural direct effect and natural indirect effect 
 
-![](https://latex.codecogs.com/gif.latex?E%5BY_%7Bam%7D%20-%20Y_%7Ba*m%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29)
+$$ E[Y_{am} - Y_{a*m} | c] = (\theta_{1} + \theta_{3}m)(a-a^{*}) $$
 
-![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%5E%7B*%7D%7D%7D%20-%20Y_%7Ba%5E%7B*%7DM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%3D%5C%7B%5Ctheta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7D%28%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%20%5Cbeta%27_%7B2%7Dc%29%5C%7D%28a-a%5E%7B*%7D%29)
+$$ E[Y_{aM_{a^{*}}} - Y_{a^{*}M_{a^{*}}} | c] = \{\theta_{1} + \theta_{3}(\beta_{0} + \beta_{1}a^{*} + \beta'_{2}c)\}(a-a^{*})$$
 
-![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%7D%7D-Y_%7BaM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B2%7D%5Cbeta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7D%5Cbeta_%7B1%7Da%29%28a-a%5E%7B*%7D%29)
+$$ E[Y_{aM_{a}} - Y_{aM_{a^{*}}} | c] = (\theta_{2}\beta_{1} + \theta_{3}\beta_{1}a)(a-a^{*})$$
 
 </center>
 
@@ -271,17 +271,17 @@ Average controlled direct effect, natural direct effect and natural indirect eff
 
 Models for Y (outcome) and M (mediator), correctly specified
 
-![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28Y%3D1%7Ca%2Cm%2Cc%29%5C%7D%3D%5Ctheta_%7B0%7D&plus;%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+$$ logit\{P(Y=1|a,m,c)\} = \theta_{0} + \theta_{1}a + \theta_{2}m + \theta_{3}am + \theta'_{4}c$$
 
-![](https://latex.codecogs.com/gif.latex?E%5BM%7Ca%2Cc%5D%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+$$ E[M|a,c] = \beta_{0} + \beta_{1}a + \beta'_{2}c $$
 
 Controlled direct effect, natural direct effect and natural indiect effect on the odds ratio scale
 
-![](https://latex.codecogs.com/gif.latex?OR%5E%7BCDE%7D%28m%29%20%3D%20exp%5C%7B%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29%5C%7D)
+$$ OR^{CDE}(m) = exp\{(\theta_{1} + \theta_{3}m})(a-a^{*})\} $$
 
-![](https://latex.codecogs.com/gif.latex?OR%5E%7BNDE%7D%20%3D%20exp%5C%7B%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7D%5Cbeta_%7B0%7D&plus;%5Ctheta_%7B3%7D%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Ctheta_%7B3%7D%5Cbeta%27_%7B2%7DC&plus;%5Ctheta_%7B3%7D%5Ctheta_%7B2%7D%5Csigma%5E%7B2%7D%29%28a-a%5E%7B2%7D%29%5C%7D)
+$$ OR^{NDE} = exp\{(\theta_{1} + \theta_{3}\beta_{0} + \theta_{3}\beta_{1}a^{*} + \theta_{3}\beta'_{2}C + \theta_{3}\theta_{2}\sigma^{2})(a-a^{2})\}$$
 
-![](https://latex.codecogs.com/gif.latex?OR%5E%7BNIE%7D%20%3D%20exp%5C%7B%28%5Ctheta_%7B2%7D%5Cbeta_%7B1%7D%20&plus;%20%5Ctheta_%7B3%7D%5Cbeta_%7B1%7Da%29%28a-a%5E%7B*%7D%29%5C%7D)
+$$ OR^{NIE} = exp\{(\theta_{2}\beta_{1} + \theta_{3}\beta_{1}a)(a-a^{*})\}$$
 
 </center>
 
@@ -291,17 +291,17 @@ Controlled direct effect, natural direct effect and natural indiect effect on th
 
 Models for Y (outcome) and M (mediator), correctly specified
 
-![](https://latex.codecogs.com/gif.latex?E%5BY%7Ca%2Cm%2Cc%5D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da%20&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+$$ E[Y|a,m,c] = \theta_{0} + \theta_{1}a + \theta_{2}m + \theta_{3}am + \theta'_{4}c $$
 
-![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28M%3D1%7Ca%2Cc%29%5C%7D%3D%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc)
+$$ logit\{P(M = 1|a,c)\} = \beta_{0} + \beta_{1}a + \beta'_{2}c$$
 
 Average controlled direct effect, natural direct effect and natural indirect effect 
 
-![](https://latex.codecogs.com/gif.latex?E%5BY_%7Bam%7D-Y_%7Ba%5E%7B*%7Dm%7D%7Cc%5D%20%3D%20%28%5Ctheta_%7B1%7D&plus;%5Ctheta_%7B3%7Dm%29%28a-a%5E%7B*%7D%29)
+$$ E[Y_{am} - Y_{a*m} | c] = (\theta_{1} + \theta_{3}m)(a-a^{*}) $$
 
-![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%5E%7B*%7D%7D%7D-Y_%7Ba%5E%7B*%7DM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%3D%5C%7B%5Ctheta_%7B1%7D%28a-a%5E%7B*%7D%29%5C%7D%20&plus;%20%5C%7B%5Ctheta_%7B3%7D%28a-a%5E%7B*%7D%29%5C%7D%5Cdfrac%7Bexp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%7B1&plus;exp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D)
+$$ E[Y_{aM_{a^{*}}} - Y_{a^{*}M_{a^{*}}} | c] = \{\theta_{1}(a-a^{*})\} + \{\theta_{3}(a-a^{*})\} \frac{exp[\beta_{0} + \beta_{1}a^{*} + \beta'_{2}c]}{1+exp[\beta_{0} + \beta_{1}a^{*} + \beta'_{2}c]}$$
 
-![](https://latex.codecogs.com/gif.latex?E%5BY_%7BaM_%7Ba%7D%7D-Y_%7BaM_%7Ba%5E%7B*%7D%7D%7D%7Cc%5D%3D%28%5Ctheta_%7B2%7D&plus;%5Ctheta_%7B3%7Da%29%20%5C%7B%5Cdfrac%7Bexp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%7B1&plus;exp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da&plus;%5Cbeta%27_%7B2%7Dc%5D%7D-%5Cdfrac%7Bexp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%7B1&plus;exp%5B%5Cbeta_%7B0%7D&plus;%5Cbeta_%7B1%7Da%5E%7B*%7D&plus;%5Cbeta%27_%7B2%7Dc%5D%7D%5C%7D)
+$$ E[Y_{aM_{a}} - Y_{aM_{a^{*}}}|c] = (\theta_{2} + \theta_{3}a)\{\frac{exp[\beta_{0} + \beta_{1}a + \beta'_{2}c]}{1+exp[\beta_{0} + \beta_{1}a + \beta'_{2}c]} - \frac{exp[\beta_{0} + \beta_{1}a^{*} + \beta'_{2}c]}{1+exp[\beta_{0} + \beta_{1}a^{*} + \beta'_{2}c]}\}$$
 
 </center>
 
@@ -311,16 +311,16 @@ Average controlled direct effect, natural direct effect and natural indirect eff
 
 Models for Y (outcome) and M (mediator), correctly specified
 
-![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28Y%3D1%7Ca%2Cm%2Cc%29%5C%7D%20%3D%20%5Ctheta_%7B0%7D%20&plus;%20%5Ctheta_%7B1%7Da&plus;%20%5Ctheta_%7B2%7Dm%20&plus;%20%5Ctheta_%7B3%7Dam%20&plus;%20%5Ctheta%27_%7B4%7Dc)
+$$ logit\{P(Y=1|a,m,c)\} = \theta_{0} + \theta_{1}a + \theta_{2}m + \theta_{3}am + \theta'_{4}c$$
 
-![](https://latex.codecogs.com/gif.latex?logit%5C%7BP%28M%3D1%7Ca%2Cc%29%5C%7D%20%3D%20%5Cbeta_%7B0%7D%20&plus;%20%5Cbeta_%7B1%7Da%20&plus;%20%5Cbeta%27_%7B2%7Dc)
+$$ logit\{P(M = 1|a,c)\} = \beta_{0} + \beta_{1}a + \beta'_{2}c$$
 
 Controlled direct effect, natural direct effect and natural indiect effect on the odds ratio scale
 
-![](https://latex.codecogs.com/gif.latex?OR%5E%7BCDE%7D%28m%29%3Dexp%5B%28%5Ctheta_1%20&plus;%20%5Ctheta_3m%29%28a-a%5E*%29%5D)
+$$ OR^{CDE}(m) = exp[(\theta_{1} + \theta_{3}m)(a-a^{*})]$$
 
-![](https://latex.codecogs.com/gif.latex?OR%5E%7BNDE%7D%20%3D%20%5Cdfrac%7Bexp%28%5Ctheta_1a%29%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a&plus;%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%7D%7Bexp%28%5Ctheta_1a%5E*%29%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a%5E*&plus;%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%7D)
+$$ OR^{NDE} = \frac{exp(\theta_{1}a)\{1+exp(\theta_{2} + \theta_{3}a + \beta_{0} + \beta_{1}a^{*} + \beta'_{2}c)\}}{exp(\theta_{1}a^{*})\{1+exp(\theta_{2} + \theta_{3}a^{*} + \beta_{0} + \beta_{1}a^{*} + \beta'_{2}c)\}}$$
 
-![](https://latex.codecogs.com/gif.latex?OR%5E%7BNIE%7D%20%3D%20%5Cdfrac%7B%5C%7B1&plus;exp%28%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a&plus;%5Cbeta_0&plus;%5Cbeta_1a&plus;%5Cbeta%27_2c%29%5C%7D%7D%7B%5C%7B1&plus;exp%28%5Cbeta_0&plus;%5Cbeta_1a&plus;%5Cbeta%27_2c%29%5C%7D%5C%7B1&plus;exp%28%5Ctheta_2&plus;%5Ctheta_3a&plus;%5Cbeta_0&plus;%5Cbeta_1a%5E*&plus;%5Cbeta%27_2c%29%5C%7D%7D)
+$$ OR^{NIE} = \frac{\{1 + exp(\beta_{0} + \beta_{1}a^{*} + \beta'_{2}c)\}\{1 + exp(\theta_{2} + \theta_{3}a + \beta_{0} + \beta_{1}a + \beta'_{2}c)\}}{\{1 + exp(\beta_{0} + \beta_{1}a + \beta'_{2}c)\}\{1 + exp(\theta_{2} + \theta_{3}a + \beta_{0} + \beta_{1}a^{*} + \beta'_{2}c)\}}$$
 
 </center>
