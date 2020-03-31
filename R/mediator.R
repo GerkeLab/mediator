@@ -168,12 +168,12 @@ mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
 
     if (boot_rep > 0) {
 
-      # pb <- progress::progress_bar$new()
+      pb <- progress::progress_bar$new(total = boot_rep + 1)
 
       CIs <- function(data , indices, ...) {
 
         d <- data[indices,]
-        pb$tick(0)
+        pb$tick()
 
         out <- stats::update(out.model, data = d)
         med <- stats::update(med.model, data = d)
@@ -231,12 +231,11 @@ mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
         return(val)
       }
 
+      # boot_results <- boot::boot(data = data, statistic = CIs, R = boot_rep,
+      #                            parallel = "multicore",
+      #                            ncpus = parallel::detectCores(logical = FALSE))
 
-      pb <- progress::progress_bar$new(total = boot_rep)
-
-      boot_results <- boot::boot(data = data, statistic = CIs, R = boot_rep,
-                                 parallel = "multicore",
-                                 ncpus = parallel::detectCores(logical = FALSE))
+      boot_results <- boot::boot(data = data, statistic = CIs, R = boot_rep)
 
       CI_CDE <- c(boot::boot.ci(boot_results, index = 1, type = "bca")$bca[[4]],
                   boot::boot.ci(boot_results, index = 1, type = "bca")$bca[[5]])
@@ -250,6 +249,7 @@ mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
                   boot::boot.ci(boot_results, index = 5, type = "bca")$bca[[5]])
 
     }
+
 
   # }
 

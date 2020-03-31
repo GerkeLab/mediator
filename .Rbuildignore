@@ -5,3 +5,7 @@
 ^README\.Rmd$
 ^codecov\.yml$
 ^cran-comments\.md$
+^man/mediator-cheatsheet\.pptx$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
