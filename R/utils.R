@@ -12,7 +12,7 @@ exp_sum_1 <- function(...) {
 
 # cov_pred gets betas*mean or betas*mode for covariates
 ## function still needs to be cleaned up a bit
-cov_pred <- function(treat, mediator, med.model, data){
+cov_pred <- function(treat, mediator_name, med.model, data){
 
   # calculate means and modes -------------------------------------------------
   cmeans <- data %>%
@@ -31,7 +31,7 @@ cov_pred <- function(treat, mediator, med.model, data){
 
   # set treatment and mediator to 0 -------------------------------------------
   pred_data[treat] <- 0
-  pred_data[mediator] <- 0
+  pred_data[mediator_name] <- 0
 
   # set factors to levels from data -------------------------------------------
   if(length(med.model$xlevels) >= 1){

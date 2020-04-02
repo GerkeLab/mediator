@@ -4,17 +4,7 @@
 \alias{mediator}
 \title{Causal Mediation Analysis}
 \usage{
-mediator(
-  data,
-  out.model,
-  med.model,
-  treat,
-  a = 1,
-  a_star = 0,
-  m = 0,
-  boot_rep = 0,
-  pm_ci = FALSE
-)
+mediator(...)
 }
 \arguments{
 \item{data}{Data set to use for analysis}

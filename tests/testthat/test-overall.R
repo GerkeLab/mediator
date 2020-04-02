@@ -21,7 +21,7 @@ test_that("R function matches SAS macro",{
                                `Upper 95% CI` = c(0.36890, 0.36116, 0.00083,
                                                   0.35208, NA))
 
-  expect_equal(first_test$Estimate, comparison$Estimate,
+  expect_equivalent(first_test$Estimate, comparison$Estimate,
                tolerance = 0.00001)
 
 
@@ -89,6 +89,6 @@ test_that("R function matches SAS macro",{
                                        `Upper 95% CI` = c(1.80266, 1.47183, 1.10615,
                                                           1.47404, NA))
 
-   expect_equal(fourth_test$Estimate, fourth_comparison$Estimate,
+   expect_equivalent(fourth_test$Estimate, fourth_comparison$Estimate,
                 tolerance = 0.00001)
 })

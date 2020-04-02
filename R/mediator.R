@@ -35,6 +35,7 @@ mediator <- function(...) {
   UseMethod("mediator")
 }
 
+#'
 #' @export
 mediator.default <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
                              m = 0, boot_rep = 0, pm_ci = FALSE){
@@ -190,7 +191,7 @@ mediator.default <- function(data, out.model, med.model, treat, a = 1, a_star = 
         }, pb = pb)) %>%
         dplyr::mutate(beta_info = furrr::future_map2(.data$splits, .data$med,
                                                      function(split, med, pb) {
-          x <- cov_pred(treat = treat, mediator = mediator, med.model = med,
+          x <- cov_pred(treat = treat, mediator_name = mediator_name, med.model = med,
                         data = rsample::analysis(split))
           pb$tick()
           return(x)
@@ -211,12 +212,12 @@ mediator.default <- function(data, out.model, med.model, treat, a = 1, a_star = 
           return(x)
         }, pb = pb)) %>%
         dplyr::mutate(theta2 = furrr::future_map(.data$out, function(out, pb) {
-          x <- out$coefficients[mediator]
+          x <- out$coefficients[mediator_name]
           pb$tick()
           return(x)
         }, pb = pb)) %>%
         dplyr::mutate(theta3 = furrr::future_map(.data$out, function(out, pb){
-          x <- out$coefficients[paste0(treat, ":", mediator)]
+          x <- out$coefficients[paste0(treat, ":", mediator_name)]
           x <- dplyr::case_when(is.na(x) ~ 0, TRUE ~ as.numeric(x))
           pb$tick()
           return(x)
@@ -394,10 +395,13 @@ mediator.default <- function(data, out.model, med.model, treat, a = 1, a_star = 
 
   attr(mediator,"arguments") <- list(treat = treat, mediator = mediator_name,
                                     a = a, a_star = a_star, m = m)
+  if (boot_rep == 0) {
   attr(mediator,"gammas") <- c(list(CDE = gCDE), list(NDE = gNDE),
                                list(NIE = gNIE), list(TE = gTE))
+  }
+
   attr(mediator,"sigma") <- Sigma
 
   return(mediator)
-  
+
 }
