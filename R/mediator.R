@@ -30,12 +30,17 @@
 #'
 #' @importFrom rlang .data
 #'
+
+mediator <- function(...) {
+  UseMethod("mediator")
+}
+
 #' @export
-mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
-                     m = 0, boot_rep = 0, pm_ci = FALSE){
+mediator.default <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
+                             m = 0, boot_rep = 0, pm_ci = FALSE){
 
   # identifying mediator variable
-  mediator <- stringr::str_trim(gsub("~.*","",as.character(med.model$call)[2]))
+  mediator_name <- stringr::str_trim(gsub("~.*","",as.character(med.model$call)[2]))
 
   # identifying out model type
   out.reg <- if (class(out.model)[1] == "coxph") {
@@ -68,8 +73,7 @@ mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
   data <- data %>% dplyr::select(var_set)
 
   betas <- stats::coef(med.model) # coefficients from mediation model
-  # beta_info <- cov_pred(cmeans, cmodes, treat, mediator, med.model, data)
-  beta_info <- cov_pred(treat, mediator, med.model, data)
+  beta_info <- cov_pred(treat, mediator_name, med.model, data)
   betasum <- sum(beta_info$betasum, na.rm=TRUE)
   betameans <- beta_info$betamean
 
@@ -78,21 +82,21 @@ mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
 
   # Covariance matrix for standar errors
   sigmaV <- stats::sigma(med.model)^2
-  Sigma <- comb_sigma(med.model, out.model, treat, mediator,
+  Sigma <- comb_sigma(med.model, out.model, treat, mediator_name,
                                   out.reg, cnames, med.reg)
 
   # setting coefficients for no interaction = 0 -------------------------------
-  if(is.na(out.model$coefficients[paste0(treat, ":", mediator)])){
-    out.model$coefficients[paste0(treat, ":", mediator)] <- 0
+  if(is.na(out.model$coefficients[paste0(treat, ":", mediator_name)])){
+    out.model$coefficients[paste0(treat, ":", mediator_name)] <- 0
   } else {
-    out.model$coefficients[paste0(treat, ":", mediator)] <-
-      out.model$coefficients[paste0(treat, ":", mediator)]
+    out.model$coefficients[paste0(treat, ":", mediator_name)] <-
+      out.model$coefficients[paste0(treat, ":", mediator_name)]
   }
 
   # pulling coefficients from models
   theta1 <- out.model$coefficients[treat]
-  theta2 <- out.model$coefficients[mediator]
-  theta3 <- out.model$coefficients[paste0(treat, ":", mediator)]
+  theta2 <- out.model$coefficients[mediator_name]
+  theta3 <- out.model$coefficients[paste0(treat, ":", mediator_name)]
 
   beta0 <- med.model$coefficients["(Intercept)"]
   beta1 <- med.model$coefficients[treat]
@@ -372,22 +376,28 @@ mediator <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
 
   # }
 
-  output <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
+  estimates <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
                                "Total Effect", "Proportion Mediated"),
-                   Estimate = c(round(CDE, 5), round(NDE, 5),
-                                round(NIE, 5), round(TE, 5),
-                                round(PM, 5)),
-                   `Lower 95% CI` = c(round(CI_CDE[[1]], 5),
-                                      round(CI_NDE[[1]], 5),
-                                      round(CI_NIE[[1]], 5),
-                                      round(CI_TE[[1]], 5),
-                                      round(CI_PM[[1]], 5)),
-                   `Upper 95% CI` = c(round(CI_CDE[[2]], 5),
-                                      round(CI_NDE[[2]], 5),
-                                      round(CI_NIE[[2]], 5),
-                                      round(CI_TE[[2]], 5),
-                                      round(CI_PM[[2]], 5)))
-  # rownames(output) <- NULL
+                   Estimate = c(CDE, NDE, NIE, TE, PM),
+                   `Lower 95% CI` = c(CI_CDE[[1]],
+                                      CI_NDE[[1]],
+                                      CI_NIE[[1]],
+                                      CI_TE[[1]],NA),
+                   `Upper 95% CI` = c(CI_CDE[[2]],
+                                      CI_NDE[[2]],
+                                      CI_NIE[[2]],
+                                      CI_TE[[2]], NA))
 
-  return(output)
+  # create mediator results object
+  mediator <- estimates
+  class(mediator) <- c("mediator", class(mediator))
+
+  attr(mediator,"arguments") <- list(treat = treat, mediator = mediator_name,
+                                    a = a, a_star = a_star, m = m)
+  attr(mediator,"gammas") <- c(list(CDE = gCDE), list(NDE = gNDE),
+                               list(NIE = gNIE), list(TE = gTE))
+  attr(mediator,"sigma") <- Sigma
+
+  return(mediator)
+  
 }

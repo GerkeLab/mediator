@@ -11,16 +11,17 @@ test_that("R function matches SAS macro",{
                          med.model = glm(c ~ x + m + cens, data = test_dat),
                          treat = "x",
                          a = 1, a_star = 0, m = 0, boot_rep = 0)
+  comparison <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
+                                          "Total Effect",
+                                          "Proportion Mediated"),
+                               Estimate = c(0.09177, 0.08407, -0.00977,
+                                            0.07430, -0.13153),
+                               `Lower 95% CI` = c(-0.18535, -0.19302, -0.02038,
+                                                  -0.20349, NA),
+                               `Upper 95% CI` = c(0.36890, 0.36116, 0.00083,
+                                                  0.35208, NA))
 
-  expect_equal(first_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
-                                             "Total Effect",
-                                             "Proportion Mediated"),
-                                  Estimate = c(0.09177, 0.08407, -0.00977,
-                                               0.07430, -0.13153),
-                                  `Lower 95% CI` = c(-0.18535, -0.19302, -0.02038,
-                                                     -0.20349, NA),
-                                  `Upper 95% CI` = c(0.36890, 0.36116, 0.00083,
-                                                     0.35208, NA)),
+  expect_equal(first_test$Estimate, comparison$Estimate,
                tolerance = 0.00001)
 
 
@@ -32,15 +33,17 @@ test_that("R function matches SAS macro",{
                            treat = "x",
                            a = 1, a_star = 0, m = 0, boot_rep = 0)
 
-   expect_equal(second_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
-                                               "Total Effect",
-                                               "Proportion Mediated"),
-                                    Estimate = c(0.42995, 0.72323, 1.05792,
-                                                 0.76512, -0.17833),
-                                    `Lower 95% CI` = c(0.14373, 0.20471, 0.81617,
-                                                       0.25162, NA),
-                                    `Upper 95% CI` = c(1.28613, 2.55513, 1.37127,
-                                                       2.32655, NA)),
+  second_comparison <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
+                                                 "Total Effect",
+                                                 "Proportion Mediated"),
+                                      Estimate = c(0.42995, 0.72323, 1.05792,
+                                                   0.76512, -0.17833),
+                                      `Lower 95% CI` = c(0.14373, 0.20471, 0.81617,
+                                                         0.25162, NA),
+                                      `Upper 95% CI` = c(1.28613, 2.55513, 1.37127,
+                                                         2.32655, NA))
+
+   expect_equal(second_test$`Lower 95% CI`, second_comparison$`Lower 95% CI`,
                 tolerance = 0.00001)
 
    # third test -----------------------------------------------------
@@ -52,15 +55,17 @@ test_that("R function matches SAS macro",{
                           treat = "x",
                           a = 1, a_star = 0, m = 0, boot_rep = 0)
 
-   expect_equal(third_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
-                                               "Total Effect",
-                                               "Proportion Mediated"),
-                                   Estimate = c(0.26042, 0.09575, -0.00369,
-                                                0.09206, -0.04012),
-                                   `Lower 95% CI` = c(-0.12956, -0.25349, -0.03495,
-                                                      -0.18416, NA),
-                                   `Upper 95% CI` = c(0.65040, 0.44499, 0.02756,
-                                                      0.36827, NA)),
+   third_comparison <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
+                                                 "Total Effect",
+                                                 "Proportion Mediated"),
+                                      Estimate = c(0.26042, 0.09575, -0.00369,
+                                                   0.09206, -0.04012),
+                                      `Lower 95% CI` = c(-0.12956, -0.25349, -0.03495,
+                                                         -0.18416, NA),
+                                      `Upper 95% CI` = c(0.65040, 0.44499, 0.02756,
+                                                         0.36827, NA))
+
+   expect_equal(third_test$`Upper 95% CI`, third_comparison$`Upper 95% CI`,
                 tolerance = 0.00001)
 
    # fourth test ----------------------------------------------------
@@ -74,14 +79,16 @@ test_that("R function matches SAS macro",{
                            m = 0,
                            boot_rep = 0)
 
-   expect_equal(fourth_test, tibble::tibble(Effect = c("CDE", "NDE", "NIE",
-                                              "Total Effect",
-                                              "Proportion Mediated"),
-                                    Estimate = c(0.54184, 0.61768, 1.00201,
-                                                 0.61892, -0.00325),
-                                    `Lower 95% CI` = c(0.16286, 0.25922, 0.90767,
-                                                       0.25987, NA),
-                                    `Upper 95% CI` = c(1.80266, 1.47183, 1.10615,
-                                                       1.47404, NA)),
+   fourth_comparison <- tibble::tibble(Effect = c("CDE", "NDE", "NIE",
+                                                  "Total Effect",
+                                                  "Proportion Mediated"),
+                                       Estimate = c(0.54184, 0.61768, 1.00201,
+                                                    0.61892, -0.00325),
+                                       `Lower 95% CI` = c(0.16286, 0.25922, 0.90767,
+                                                          0.25987, NA),
+                                       `Upper 95% CI` = c(1.80266, 1.47183, 1.10615,
+                                                          1.47404, NA))
+
+   expect_equal(fourth_test$Estimate, fourth_comparison$Estimate,
                 tolerance = 0.00001)
 })

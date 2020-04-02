@@ -2,6 +2,8 @@
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^\.travis\.yml$
+^codecov\.yml$
+^\.covrignore$
 ^README\.Rmd$
 ^codecov\.yml$
 ^cran-comments\.md$
