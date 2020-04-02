@@ -1,5 +1,5 @@
 Package: mediator
-Title: Causal mediation analysis
+Title: Causal Mediation Analysis
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Jordan", "Creed", email = "jordan.h.creed@moffitt.org", 
@@ -20,8 +20,12 @@ Imports:
     dplyr,
     purrr,
     tibble,
-    stringr
-RoxygenNote: 7.0.2
+    stringr,
+    progress,
+    furrr,
+    rsample,
+    rlang
+RoxygenNote: 7.1.0
 Depends: R (>= 2.10)
 Suggests: 
     testthat (>= 2.1.0),

@@ -3,3 +3,4 @@
 export("%>%")
 export(mediator)
 importFrom(magrittr,"%>%")
+importFrom(rlang,.data)
