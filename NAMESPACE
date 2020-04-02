@@ -3,5 +3,6 @@
 S3method(mediator,default)
 S3method(print,mediator)
 export("%>%")
+export(mediator)
 importFrom(magrittr,"%>%")
 importFrom(rlang,.data)

@@ -2,11 +2,27 @@
 % Please edit documentation in R/mediator.R
 \name{mediator}
 \alias{mediator}
+\alias{mediator.default}
 \title{Causal Mediation Analysis}
 \usage{
 mediator(...)
+
+\method{mediator}{default}(
+  data,
+  out.model,
+  med.model,
+  treat,
+  a = 1,
+  a_star = 0,
+  m = 0,
+  boot_rep = 0,
+  pm_ci = FALSE,
+  ...
+)
 }
 \arguments{
+\item{...}{other arguments}
+
 \item{data}{Data set to use for analysis}
 
 \item{out.model}{A fitted model object for the outcome.
@@ -44,4 +60,11 @@ The `mediator` R function conducts mediation analysis under
 the counterfactual framework assuming interation between the exposure
 and mediator. Currently the function works for binary and continuous
 outcomes and mediators.
+}
+\examples{
+mediator(data = example250,
+         out.model = lm(y ~ x + c + m + x*c, data = example250),
+         med.model = lm(c ~ x + m, data = example250),
+         treat = "x")
+
 }

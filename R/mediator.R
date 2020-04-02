@@ -28,17 +28,24 @@
 #' @return Tibble containing point estimates and 95 percent CI for the
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
+#' @examples
+#' mediator(data = example250,
+#'          out.model = lm(y ~ x + c + m + x*c, data = example250),
+#'          med.model = lm(c ~ x + m, data = example250),
+#'          treat = "x")
+#'
 #' @importFrom rlang .data
 #'
-
+#' @param ... other arguments
+#' @export
 mediator <- function(...) {
   UseMethod("mediator")
 }
 
-#'
+#' @rdname mediator
 #' @export
 mediator.default <- function(data, out.model, med.model, treat, a = 1, a_star = 0,
-                             m = 0, boot_rep = 0, pm_ci = FALSE){
+                             m = 0, boot_rep = 0, pm_ci = FALSE, ...){
 
   # identifying mediator variable
   mediator_name <- stringr::str_trim(gsub("~.*","",as.character(med.model$call)[2]))
