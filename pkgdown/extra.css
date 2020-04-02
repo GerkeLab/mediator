@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css?family=Lato');
+
+.navbar-link {
+  font-family: Lato, Arial, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Lato, Arial, sans-serif;
+}
+
+body {
+  font-size: 16px;
+}
+
+p > code {
+    background: #f8f8f8;
+    background: white;
+    color: #D3751C;
+    padding: 2px 2px;
+    font-size: 80%;
+}
+
+p > code > a {
+    background: white;
+    color: #D3751C;
+}
+
+p > code:hover > a {
+  background: white;
+  color: #D3751C;
+  padding-bottom: 2px;
+  border-bottom: #d3751C80 solid 1px;
+  text-decoration: none;
+}
+
+a {
+    color: #161688;
+    text-decoration: none;
+}
+
+a:hover {
+  color: #161688;
+  text-decoration: underline dashed;
+}
+
+table a:not(.btn), .table a:not(.btn) {
+  text-decoration: none;
+}
+.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+  color: #ffffff;
+  background-color: #999999;
+}
+.nav-pills > li > a {
+  color: #999999;
+}
