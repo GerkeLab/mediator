@@ -3,8 +3,8 @@
 
 <!-- badges: start -->
 
-[![Travis build
-status](https://travis-ci.org/GerkeLab/mediator.svg?branch=master)](https://travis-ci.org/GerkeLab/mediator)
+\[![Travis build
+status](https://travis-ci.com/GerkeLab/mediator.svg?branch=master)
 [![Codecov test
 coverage](https://codecov.io/gh/GerkeLab/mediator/branch/master/graph/badge.svg)](https://codecov.io/gh/GerkeLab/mediator?branch=master)
 <!-- badges: end -->
