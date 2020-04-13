@@ -12,3 +12,6 @@
 ^docs$
 ^pkgdown$
 ^tic\.R$
+^\.ccache$
+^\.github$
+^clang-.*
