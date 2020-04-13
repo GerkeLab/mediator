@@ -277,7 +277,7 @@ $$ E[M|a,c] = \beta_{0} + \beta_{1}a + \beta'_{2}c $$
 
 Controlled direct effect, natural direct effect and natural indiect effect on the odds ratio scale
 
-$$ OR^{CDE}(m) = exp\{(\theta_{1} + \theta_{3}m})(a-a^{*})\} $$
+$$ OR^{CDE}(m) = exp[(\theta_{1} + \theta_{3}m)(a-a^{*})] $$
 
 $$ OR^{NDE} = exp\{(\theta_{1} + \theta_{3}\beta_{0} + \theta_{3}\beta_{1}a^{*} + \theta_{3}\beta'_{2}C + \theta_{3}\theta_{2}\sigma^{2})(a-a^{2})\}$$
 
