@@ -17,12 +17,12 @@ The goal of `mediator` is to conduct causal mediation analysis under the
 counterfactual framework, allowing interation between the exposure and
 mediator ([1](#references)). Currently, `mediator` estimates the
 controlled direct effect (CDE), natural direct effect (NDE), natural
-indirect effect (NIE), total effect (TE) and proportion mediated (PM)
-and their 95% confidence intervals.
+indirect effect (NIE), total effect (TE), and proportion mediated (PM),
+along with 95% confidence intervals for each.
 
 ## Installation
 
-You can install `mediator` from github with:
+You can install `mediator` from GitHub with:
 
 ``` r
 # install.packages("devtools")
@@ -33,16 +33,16 @@ devtools::install_github("gerkelab/mediator")
 
 ## Usage
 
-`mediator` currently implements mediation analysis for dichotomous and
-count mediators and outcomes, as well as censored time-to-event
-outcomes. Estimate validity assumes proper modeling on the part of the
-user.
+`mediator` currently implements mediation analyses for binary and
+continuous exposures/mediators/outcomes, as well as censored
+time-to-event outcomes. As with all causal inference approaches,
+estimate validity relies on appropriate assumptions and model
+specification on the part of the user.
 
-The following example uses `example250` from within `mediator`, which
-was randomly generated, and assumes `x` (binary) is our independent
-variable/treatment, `y` (continuous) as our mediator, `cens` (binary) as
-our outcome and `c` (continuous) as a confounder that needs to be
-adjusted for.
+To demonstrate usage, we consider the `mediation_example` data included
+with `mediator`. This data set contains exposure/treatment variable `x`
+(binary), mediator variable `m` (continuous), outcome variable `y`
+(binary), and confounder `c` (continuous).
 
 ![](man/figures/mediator-dag.png)
 

@@ -15,3 +15,4 @@
 ^\.ccache$
 ^\.github$
 ^clang-.*
+^dev$
