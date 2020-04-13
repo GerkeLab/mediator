@@ -41,8 +41,11 @@ mediation_example <-
     )
     
 # store
-readr::write_rds(
-  mediation_example, 
-  here::here("data/mediation_example.rds")
-)  
+# readr::write_rds(
+#   mediation_example,
+#   here::here("data/mediation_example.rds")
+# )
+
+# store 
+usethis::use_data(mediation_example)
 ```
