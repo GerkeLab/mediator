@@ -15,10 +15,10 @@ coverage](https://codecov.io/gh/GerkeLab/mediator/branch/master/graph/badge.svg)
 
 The goal of `mediator` is to conduct causal mediation analysis under the
 counterfactual framework, allowing interation between the exposure and
-mediator \[Valeri 2013\]. Currently, `mediator` estimates the controlled
-direct effect (CDE), natural direct effect (NDE), natural indirect
-effect (NIE), total effect (TE) and proportion mediated (PM) and their
-95% confidence intervals.
+mediator ([1](#references)). Currently, `mediator` estimates the
+controlled direct effect (CDE), natural direct effect (NDE), natural
+indirect effect (NIE), total effect (TE) and proportion mediated (PM)
+and their 95% confidence intervals.
 
 ## Installation
 
@@ -110,7 +110,7 @@ as well as comparisons of `mediator` and the SAS macro `%mediation`.
 
 ### References
 
-Valeri, L., and T. J. Vanderweele. 2013. “Mediation analysis allowing
-for exposure-mediator interactions and causal interpretation:
-theoretical assumptions and implementation with SAS and SPSS macros.”
-Psychol Methods 18 (2): 137–50.
+1.  Valeri, L. and T. J. Vanderweele. 2013. “Mediation analysis allowing
+    for exposure-mediator interactions and causal interpretation:
+    theoretical assumptions and implementation with SAS and SPSS
+    macros.” Psychol Methods 18 (2): 137–50.
