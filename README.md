@@ -3,10 +3,15 @@
 
 <!-- badges: start -->
 
-\[![Travis build
-status](https://travis-ci.com/GerkeLab/mediator.svg?branch=master)
+[![Lifecycle:
+maturing](https://img.shields.io/badge/lifecycle-maturing-blue.svg)](https://www.tidyverse.org/lifecycle/#maturing)
+[![Travis build
+status](https://img.shields.io/travis/GerkeLab/mediator/master?logo=travis&style=flat&label=Linux)](https://travis-ci.com/GerkeLab/mediator)
+[![R CMD Check
+Windows/MacOS/Ubuntu](https://github.com/GerkeLab/mediator/workflows/R%20CMD%20Check%20Windows/MacOS/Ubuntu/badge.svg)](https://github.com/tgerke/risks/actions?query=workflow%3A%22R+CMD+Check+Windows%2FMacOS%2FUbuntu%22)
 [![Codecov test
 coverage](https://codecov.io/gh/GerkeLab/mediator/branch/master/graph/badge.svg)](https://codecov.io/gh/GerkeLab/mediator?branch=master)
+
 <!-- badges: end -->
 
 The goal of `mediator` is to conduct causal mediation analysis under the
