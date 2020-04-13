@@ -99,11 +99,11 @@
 </h1></div>
 <!-- badges: start -->
 
-<p>The goal of <code>mediator</code> is to conduct causal mediation analysis under the counterfactual framework, allowing interation between the exposure and mediator (<a href="#references">1</a>). Currently, <code>mediator</code> estimates the controlled direct effect (CDE), natural direct effect (NDE), natural indirect effect (NIE), total effect (TE) and proportion mediated (PM) and their 95% confidence intervals.</p>
+<p>The goal of <code>mediator</code> is to conduct causal mediation analysis under the counterfactual framework, allowing interation between the exposure and mediator (<a href="#references">1</a>). Currently, <code>mediator</code> estimates the controlled direct effect (CDE), natural direct effect (NDE), natural indirect effect (NIE), total effect (TE), and proportion mediated (PM), along with 95% confidence intervals for each.</p>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
-<p>You can install <code>mediator</code> from github with:</p>
+<p>You can install <code>mediator</code> from GitHub with:</p>
 <div class="sourceCode" id="cb1"><pre class="r"><span class="co"># install.packages("devtools")</span>
 <span class="kw pkg">devtools</span><span class="kw ns">::</span><span class="fu">install_github</span>(<span class="st">"gerkelab/mediator"</span>)</pre></div>
 <!--- add CRAN once up --->
@@ -111,8 +111,8 @@
 <div id="usage" class="section level2">
 <h2 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h2>
-<p><code>mediator</code> currently implements mediation analysis for dichotomous and count mediators and outcomes, as well as censored time-to-event outcomes. Estimate validity assumes proper modeling on the part of the user.</p>
-<p>The following example uses <code>example250</code> from within <code>mediator</code>, which was randomly generated, and assumes <code>x</code> (binary) is our independent variable/treatment, <code>y</code> (continuous) as our mediator, <code>cens</code> (binary) as our outcome and <code>c</code> (continuous) as a confounder that needs to be adjusted for.</p>
+<p><code>mediator</code> currently implements mediation analyses for binary and continuous exposures/mediators/outcomes, as well as censored time-to-event outcomes. As with all causal inference approaches, estimate validity relies on appropriate assumptions and model specification on the part of the user.</p>
+<p>To demonstrate usage, we consider the <code>mediation_example</code> data included with <code>mediator</code>. This data set contains exposure/treatment variable <code>x</code> (binary), mediator variable <code>m</code> (continuous), outcome variable <code>y</code> (binary), and confounder <code>c</code> (continuous).</p>
 <p><img src="reference/figures/mediator-dag.png"></p>
 <p>In the above DAG the path for the NIE is shown in blue while the path for the NDE is in purple. The TE is the combined effect of both the NIE and NDE. When no interaction between the exposure and mediator exists, the CDE and NDE are the same.</p>
 <p>The simplest use case of <code>mediator</code> would be as follows:</p>
