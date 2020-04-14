@@ -27,9 +27,9 @@ This vignette introduces `mediator` and provides an overview for mediation analy
 In this vignette, we will use randomly generated data - `example250.rda`. The data is an extended version of the data provided in the SAS macro `%mediation`, with the same columns but 250 rows. 
 
 ```{r}
-head(example250)
+head(mediation_example)
 
-dim(example250)
+dim(mediation_example)
 ```
 
 ## Introduction 
@@ -58,9 +58,9 @@ In this vignette, we will :
 `mediator` returns a data frame containing the point estimates and CIs for CDE, NDE, NIE and TE as well as the point estimates for the PM. The function assumes appropriate modeling (for the outcome and mediator models) on the part of the user and allows (but does not require) interaction between the exposure and the mediator. A basic example of function is shown below:
 
 ```{r, eval = FALSE}
-mediator(data=example250,
-         out.model = lm(y ~ x + c + m + x*c, data = example250),
-         med.model = lm(c ~ x + m, data = example250),
+mediator(data = mediation_example,
+         out.model = lm(y ~ x  + m + c + x*m, data = mediation_example),
+         med.model = lm(m ~ x + c, data = mediation_example),
          treat = "x",
          a = 1, a_star = 0,
          m = 0,
@@ -76,7 +76,7 @@ Setting `boot_rep = 0`, tells the function to use the Delta method for calculati
 
 When the macros calculate the CI using the delta method, they use the hard coded values 1.96 and -1.96 while `mediator` uses `c(-1,1)*qnorm(.975)`. Languages also differ with respect to rounding. 
 
-The `%mediation` takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while `mediator` takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using the `example250.rda` dataset with 250 observations and 100 replicates). 
+The `%mediation` takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while `mediator` takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using the `mediation_example.rda` dataset with 250 observations and 100 replicates). 
 
 When using bootstrapping, `%mediation` bootstraps both the effect estimates and CI, while the R function `mediator` only uses the bootstrap for obtaining the CI. Users should use the bootstrap function with caution, especially when using small datasets. We recommend using a minimum 10000 replicates. Using more replicates will take more time, however it will provide more precise estimates. This is especially important when using small datasets, as using a small number of replicated could make the CI wonky. 
 
@@ -85,14 +85,14 @@ Below are examples of results from `mediator` (left) and `%mediation` (right) fo
 #### Continuous outcome and mediator
 
 ```{r, eval = FALSE}
-mediator(data=example250,
-         out.model = lm(y ~ x + c + m + x*c, data = example250),
-         med.model = lm(c ~ x + m, data = example250),
+mediator(data = mediation_example,
+         out.model = lm(c ~ x + m + x*m, data = mediation_example),
+         med.model = lm(m ~ x, data = mediation_example),
          treat = "x")
 ```
 
 ```{sas, eval = FALSE}
-%mediation(data = example250, yvar = y, avar = x, mvar = c, cvar = m, a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = linear, interaction = true, casecontrol =, output =, c =, boot =, cens=);
+%mediation(data = mediation_example, yvar = c, avar = x, mvar = m, cvar = , a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = linear, interaction = true, casecontrol =, output =, c =, boot =, cens=);
 run;
 ```
 
@@ -100,22 +100,22 @@ run;
 
 sas1 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.075592, 0.066247, -0.007238,
-                                             0.059009, -0.12266),
-                                `Lower 95% CI` = c(-0.20237, -0.21177,
-                                                   -0.04745, -0.21947, NA),
-                                `Upper 95% CI` = c(0.35356, 0.34426, 0.03298,
-                                                   0.33748, NA)
+                                Estimate = c(-0.176, 0.014, -0.014,
+                                             0.001, -21.7),
+                                `Lower 95% CI` = c(-0.517, -0.252, -0.113,
+                                                   -0.258, NA),
+                                `Upper 95% CI` = c(0.165, 0.281, 0.085,
+                                                   0.260, NA)
                             ))
 
 r1 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.07559, 0.06625, -0.00724,
-                                             0.05901, -0.12266),
-                                `Lower 95% CI` = c(-0.20237, -0.21176, -0.01547,
-                                                   -0.21946, NA),
-                                `Upper 95% CI` = c(0.35355, 0.34426, 0.00099,
-                                                   0.33748, NA)
+                                Estimate = c(-0.176, 0.014, -0.014,
+                                             0.001, -21.708),
+                                `Lower 95% CI` = c(-0.517, -0.252, -0.151,
+                                                   -0.258, NA),
+                                `Upper 95% CI` = c(0.165, 0.281, 0.123,
+                                                   0.260, NA)
                            ))
 
 knitr::kable(list(r1, sas1))
@@ -126,14 +126,15 @@ knitr::kable(list(r1, sas1))
 #### Binary outcome and mediator 
 
 ```{r, eval = FALSE}
-mediator(data = example250,
-         out.model = glm(cens ~ x + m + c + x*m, data=example250, family="binomial"),
-         med.model = glm(m ~ x + c, data = example250, family = "binomial"),
+mediator(data = mediation_example,
+         out.model = glm(y ~ x + m_01 + c + x*m_01, 
+                         data = mediation_example, family = "binomial"),
+         med.model = glm(m_01 ~ x + c, data = mediation_example, family = "binomial"),
          treat = "x")
 ```
 
 ```{sas, eval = FALSE}
-%mediation(data = example250, yvar = cens, avar = x, mvar = m, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = logistic, interaction = true, casecontrol=,output=,c=,boot=,cens=);
+%mediation(data = mediation_example, yvar = y, avar = x, mvar = m_01, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = logistic, interaction = true, casecontrol=,output=,c=,boot=,cens=);
 run;
 ```
 
@@ -141,22 +142,22 @@ run;
 
 sas2 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.57804, 0.62896, 1.00288, 
-                                             0.63078, -0.004912409),
-                                `Lower 95% CI` = c(0.17510, 0.26576, 0.90561,
-                                                   0.26666, NA),
-                                `Upper 95% CI` = c(1.90819, 1.48852, 1.11060,
-                                                   1.49209, NA)
+                                Estimate = c(0.279, 0.517, 1.049,
+                                             0.542, -0.055),
+                                `Lower 95% CI` = c(0.058, 0.225, 0.905,
+                                                   0.235, NA),
+                                `Upper 95% CI` = c(1.342, 1.186, 1.216,
+                                                   1.253, NA)
                             ))
 
 r2 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.57804, 0.62896, 1.00288,
-                                             0.63078, -0.00491),
-                                `Lower 95% CI` = c(0.1751, 0.26577, 0.90561,
-                                                   0.26666, NA),
-                                `Upper 95% CI` = c(1.90815, 1.4885, 1.11061,
-                                                   1.49207, NA)
+                                Estimate = c(0.279, 0.517, 1.049,
+                                             0.542, -0.055),
+                                `Lower 95% CI` = c(0.058, 0.225, 0.905,
+                                                   0.235, NA),
+                                `Upper 95% CI` = c(1.342, 1.186, 1.216,
+                                                   1.253, NA)
                            ))
 
 knitr::kable(list(r2, sas2))
@@ -166,14 +167,14 @@ knitr::kable(list(r2, sas2))
 #### Continous outcome and binary mediator 
 
 ```{r, eval = FALSE}
-mediator(data = example250,
-         out.model = lm(y ~ x + m + c + x*m, data = example250),
-         med.model = glm(m ~ x + c, data = example250, family = "binomial"),
+mediator(data = mediation_example,
+         out.model = lm(c ~ x + m_01 + x*m_01, data = mediation_example),
+         med.model = glm(m_01 ~ x, data = mediation_example, family = "binomial"),
          treat = "x")
 ```
 
 ```{sas, eval = FALSE}
-%mediation(data = data, yvar = y, avar = x, mvar = m, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = logistic, interaction = true, casecontrol=, output=, c=, boot=, cens=);
+%mediation(data = mediation_example, yvar = c, avar = x, mvar = m_01, cvar = , a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = logistic, interaction = true, casecontrol=, output=, c=, boot=, cens=);
 run;
 ```
 
@@ -181,22 +182,22 @@ run;
 
 sas3 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.23692, 0.07713, -0.00355,
-                                             0.07358, -0.048235),
-                                `Lower 95% CI` = c(-0.15452, -0.20195, -0.03535,
-                                                   -0.20750, NA),
-                                `Upper 95% CI` = c(0.62836, 0.35620, 0.02825,
-                                                   0.35466, NA)
+                                Estimate = c(0.018, 0.000, 0.000,
+                                             0.001, 0.598),
+                                `Lower 95% CI` = c(-0.350, -0.257, -0.017,
+                                                   -0.257, NA),
+                                `Upper 95% CI` = c(0.386, 0.258, 0.017,
+                                                   0.258, NA)
                             ))
 
 r3 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.23692, 0.07713, -0.00355,
-                                             0.07358, -0.04824),
-                                `Lower 95% CI` = c(-0.15452, -0.22195, -0.03535,
-                                                   -0.20348, NA),
-                                `Upper 95% CI` = c(0.62835, 0.37621, 0.02825,
-                                                   0.35063, NA)
+                                Estimate = c(0.018, 0.000, 0.000,
+                                             0.001, 0.598),
+                                `Lower 95% CI` = c(-0.350, -0.283, -0.017,
+                                                   -0.257, NA),
+                                `Upper 95% CI` = c(0.386, 0.284, 0.017, 
+                                                   0.258, NA)
                            ))
 
 knitr::kable(list(r3, sas3))
@@ -206,14 +207,15 @@ knitr::kable(list(r3, sas3))
 #### Binary outcome and continuous mediator 
 
 ```{r, eval = FALSE}
-mediator(data = example250,
-         out.model = glm(cens ~ x + y + c + x*y, data = example250, family = "binomial"),
-         med.model = lm(y ~ x + c, data = example250),
+mediator(data = mediation_example,
+         out.model = glm(y ~ x + m + c + x*m, 
+                         data = mediation_example, family = "binomial"),
+         med.model = lm(m ~ x + c, data = mediation_example),
          treat = "x")
 ```
 
 ```{sas, eval = FALSE}
-%mediation(data = data, yvar = cens, avar = x, mvar = y, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = linear, interaction = true, casecontrol=, output=, c=, boot=, cens=);
+%mediation(data = mediation_example, yvar = y, avar = x, mvar = y, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = linear, interaction = true, casecontrol=, output=, c=, boot=, cens=);
 run;
 ```
 
@@ -221,22 +223,22 @@ run;
 
 sas4 <- as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.42792, 0.71508, 1.06904,
-                                             0.76445, -0.20959),
-                                `Lower 95% CI` = c(0.14328, 0.20414, 0.82486,
-                                                   0.21210, NA),
-                                `Upper 95% CI` = c(1.27802, 2.50493,1.38549,
-                                                   2.75528, NA)
+                                Estimate = c(1.005, 0.620, 0.803,
+                                             0.498, 0.244),
+                                `Lower 95% CI` = c(0.314, 0.224, 0.506,
+                                                   0.207, NA),
+                                `Upper 95% CI` = c(3.221, 1.715, 1.274,
+                                                   1.200, NA)
                             ))
 
 r4 <-  as.data.frame(cbind(Effect = c("CDE", "NDE", "NIE", "Total Effect",
                                        "Proportion Mediated"),
-                                Estimate = c(0.42792, 0.71508, 1.06904,
-                                             0.76445, -0.20959),
-                                `Lower 95% CI` = c(0.14331, 0.20414, 0.82487,
-                                                   0.25065, NA),
-                                `Upper 95% CI` = c(1.27772, 2.50483, 1.38549,
-                                                   2.33153, NA)
+                                Estimate = c(1.005, 0.620, 0.803,
+                                             0.498, 0.244),
+                                `Lower 95% CI` = c(0.314, 0.224, 0.506,
+                                                   0.103, NA),
+                                `Upper 95% CI` = c(3.222, 1.716, 1.274, 
+                                                   2.403, NA)
                            ))
 
 knitr::kable(list(r4, sas4))
