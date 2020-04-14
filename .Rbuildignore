@@ -16,3 +16,4 @@
 ^\.github$
 ^clang-.*
 ^dev$
+^data/mediation_example\.rds$
