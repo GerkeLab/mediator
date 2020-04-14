@@ -110,17 +110,17 @@
 <h2 class="hasAnchor">
 <a href="#data" class="anchor"></a>Data</h2>
 <p>In this vignette, we will use randomly generated data - <code>example250.rda</code>. The data is an extended version of the data provided in the SAS macro <code>%mediation</code>, with the same columns but 250 rows.</p>
-<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">example250</span>)
-<span class="co">#&gt;   id x m           y cens           c</span>
-<span class="co">#&gt; 1  1 0 1  0.02177978    0 -0.01371507</span>
-<span class="co">#&gt; 2  2 1 1  0.24805114    1  0.20837600</span>
-<span class="co">#&gt; 3  3 1 0  0.40501359    0 -0.15320959</span>
-<span class="co">#&gt; 4  4 0 1  0.38897563    0 -0.21897012</span>
-<span class="co">#&gt; 5  5 0 1  0.06201158    0 -1.10214446</span>
-<span class="co">#&gt; 6  6 0 0 -0.07938128    0 -1.40249714</span>
+<div class="sourceCode" id="cb1"><html><body><pre class="r"><span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="no">mediation_example</span>)
+<span class="co">#&gt;   x m_01          m y          c</span>
+<span class="co">#&gt; 1 0    1 0.00965707 0  0.5529378</span>
+<span class="co">#&gt; 2 0    1 0.30360478 0 -0.7385979</span>
+<span class="co">#&gt; 3 0    1 0.51954681 0  1.1788648</span>
+<span class="co">#&gt; 4 0    0 0.18600953 1  2.8974657</span>
+<span class="co">#&gt; 5 0    0 0.12708356 0 -1.2719255</span>
+<span class="co">#&gt; 6 0    0 0.12181193 0  1.9804641</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">example250</span>)
-<span class="co">#&gt; [1] 250   6</span></pre></body></html></div>
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="no">mediation_example</span>)
+<span class="co">#&gt; [1] 250   5</span></pre></body></html></div>
 </div>
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
@@ -148,9 +148,9 @@
 <h2 class="hasAnchor">
 <a href="#usage" class="anchor"></a>Usage</h2>
 <p><code>mediator</code> returns a data frame containing the point estimates and CIs for CDE, NDE, NIE and TE as well as the point estimates for the PM. The function assumes appropriate modeling (for the outcome and mediator models) on the part of the user and allows (but does not require) interaction between the exposure and the mediator. A basic example of function is shown below:</p>
-<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span><span class="kw">=</span><span class="no">example250</span>,
-         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">c</span> + <span class="no">m</span> + <span class="no">x</span>*<span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>),
-         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">c</span> ~ <span class="no">x</span> + <span class="no">m</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>),
+<div class="sourceCode" id="cb2"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>,
+         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">y</span> ~ <span class="no">x</span>  + <span class="no">m</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
+         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">m</span> ~ <span class="no">x</span> + <span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
          <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>,
          <span class="kw">a</span> <span class="kw">=</span> <span class="fl">1</span>, <span class="kw">a_star</span> <span class="kw">=</span> <span class="fl">0</span>,
          <span class="kw">m</span> <span class="kw">=</span> <span class="fl">0</span>,
@@ -162,17 +162,17 @@
 <a href="#mediator-vs-mediation" class="anchor"></a>mediator vs %mediation</h2>
 <p><code>mediator</code> is related to the SAS/SPSS macros developed by Valeri and VanderWeele, <code>%mediation</code>, however minor differences exist between the programs which sometimes results in variation in estimates and confidence intervals.</p>
 <p>When the macros calculate the CI using the delta method, they use the hard coded values 1.96 and -1.96 while <code>mediator</code> uses <code>c(-1,1)*qnorm(.975)</code>. Languages also differ with respect to rounding.</p>
-<p>The <code>%mediation</code> takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while <code>mediator</code> takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using the <code>example250.rda</code> dataset with 250 observations and 100 replicates).</p>
+<p>The <code>%mediation</code> takes roughly 7.05 seconds to run, calculating the CI using the delta method, and roughly 276.55 seconds using bootstrapping, while <code>mediator</code> takes 0.01 seconds for the delta method and 0.27 seconds for bootstrapping (using the <code>mediation_example.rda</code> dataset with 250 observations and 100 replicates).</p>
 <p>When using bootstrapping, <code>%mediation</code> bootstraps both the effect estimates and CI, while the R function <code>mediator</code> only uses the bootstrap for obtaining the CI. Users should use the bootstrap function with caution, especially when using small datasets. We recommend using a minimum 10000 replicates. Using more replicates will take more time, however it will provide more precise estimates. This is especially important when using small datasets, as using a small number of replicated could make the CI wonky.</p>
 <p>Below are examples of results from <code>mediator</code> (left) and <code>%mediation</code> (right) for comparison.</p>
 <div id="continuous-outcome-and-mediator" class="section level4">
 <h4 class="hasAnchor">
 <a href="#continuous-outcome-and-mediator" class="anchor"></a>Continuous outcome and mediator</h4>
-<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span><span class="kw">=</span><span class="no">example250</span>,
-         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">c</span> + <span class="no">m</span> + <span class="no">x</span>*<span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>),
-         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">c</span> ~ <span class="no">x</span> + <span class="no">m</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>),
+<div class="sourceCode" id="cb3"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>,
+         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">c</span> ~ <span class="no">x</span> + <span class="no">m</span> + <span class="no">x</span>*<span class="no">m</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
+         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">m</span> ~ <span class="no">x</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
          <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>)</pre></body></html></div>
-<pre class="sas"><code>%mediation(data = example250, yvar = y, avar = x, mvar = c, cvar = m, a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = linear, interaction = true, casecontrol =, output =, c =, boot =, cens=);
+<pre class="sas"><code>%mediation(data = mediation_example, yvar = c, avar = x, mvar = m, cvar = , a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = linear, interaction = true, casecontrol =, output =, c =, boot =, cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
 <td>
@@ -186,31 +186,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.07559</td>
-<td align="left">-0.20237</td>
-<td align="left">0.35355</td>
+<td align="left">-0.176</td>
+<td align="left">-0.517</td>
+<td align="left">0.165</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.06625</td>
-<td align="left">-0.21176</td>
-<td align="left">0.34426</td>
+<td align="left">0.014</td>
+<td align="left">-0.252</td>
+<td align="left">0.281</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">-0.00724</td>
-<td align="left">-0.01547</td>
-<td align="left">0.00099</td>
+<td align="left">-0.014</td>
+<td align="left">-0.151</td>
+<td align="left">0.123</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.05901</td>
-<td align="left">-0.21946</td>
-<td align="left">0.33748</td>
+<td align="left">0.001</td>
+<td align="left">-0.258</td>
+<td align="left">0.26</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.12266</td>
+<td align="left">-21.708</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -228,31 +228,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.075592</td>
-<td align="left">-0.20237</td>
-<td align="left">0.35356</td>
+<td align="left">-0.176</td>
+<td align="left">-0.517</td>
+<td align="left">0.165</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.066247</td>
-<td align="left">-0.21177</td>
-<td align="left">0.34426</td>
+<td align="left">0.014</td>
+<td align="left">-0.252</td>
+<td align="left">0.281</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">-0.007238</td>
-<td align="left">-0.04745</td>
-<td align="left">0.03298</td>
+<td align="left">-0.014</td>
+<td align="left">-0.113</td>
+<td align="left">0.085</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.059009</td>
-<td align="left">-0.21947</td>
-<td align="left">0.33748</td>
+<td align="left">0.001</td>
+<td align="left">-0.258</td>
+<td align="left">0.26</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.12266</td>
+<td align="left">-21.7</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -264,11 +264,12 @@ run;</code></pre>
 <div id="binary-outcome-and-mediator" class="section level4">
 <h4 class="hasAnchor">
 <a href="#binary-outcome-and-mediator" class="anchor"></a>Binary outcome and mediator</h4>
-<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>,
-         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">cens</span> ~ <span class="no">x</span> + <span class="no">m</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m</span>, <span class="kw">data</span><span class="kw">=</span><span class="no">example250</span>, <span class="kw">family</span><span class="kw">=</span><span class="st">"binomial"</span>),
-         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">m</span> ~ <span class="no">x</span> + <span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
+<div class="sourceCode" id="cb5"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>,
+         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">m_01</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m_01</span>,
+                         <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
+         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">m_01</span> ~ <span class="no">x</span> + <span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
          <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>)</pre></body></html></div>
-<pre class="sas"><code>%mediation(data = example250, yvar = cens, avar = x, mvar = m, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = logistic, interaction = true, casecontrol=,output=,c=,boot=,cens=);
+<pre class="sas"><code>%mediation(data = mediation_example, yvar = y, avar = x, mvar = m_01, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = logistic, interaction = true, casecontrol=,output=,c=,boot=,cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
 <td>
@@ -282,31 +283,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.57804</td>
-<td align="left">0.1751</td>
-<td align="left">1.90815</td>
+<td align="left">0.279</td>
+<td align="left">0.058</td>
+<td align="left">1.342</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.62896</td>
-<td align="left">0.26577</td>
-<td align="left">1.4885</td>
+<td align="left">0.517</td>
+<td align="left">0.225</td>
+<td align="left">1.186</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">1.00288</td>
-<td align="left">0.90561</td>
-<td align="left">1.11061</td>
+<td align="left">1.049</td>
+<td align="left">0.905</td>
+<td align="left">1.216</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.63078</td>
-<td align="left">0.26666</td>
-<td align="left">1.49207</td>
+<td align="left">0.542</td>
+<td align="left">0.235</td>
+<td align="left">1.253</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.00491</td>
+<td align="left">-0.055</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -324,31 +325,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.57804</td>
-<td align="left">0.1751</td>
-<td align="left">1.90819</td>
+<td align="left">0.279</td>
+<td align="left">0.058</td>
+<td align="left">1.342</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.62896</td>
-<td align="left">0.26576</td>
-<td align="left">1.48852</td>
+<td align="left">0.517</td>
+<td align="left">0.225</td>
+<td align="left">1.186</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">1.00288</td>
-<td align="left">0.90561</td>
-<td align="left">1.1106</td>
+<td align="left">1.049</td>
+<td align="left">0.905</td>
+<td align="left">1.216</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.63078</td>
-<td align="left">0.26666</td>
-<td align="left">1.49209</td>
+<td align="left">0.542</td>
+<td align="left">0.235</td>
+<td align="left">1.253</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.004912409</td>
+<td align="left">-0.055</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -360,11 +361,11 @@ run;</code></pre>
 <div id="continous-outcome-and-binary-mediator" class="section level4">
 <h4 class="hasAnchor">
 <a href="#continous-outcome-and-binary-mediator" class="anchor"></a>Continous outcome and binary mediator</h4>
-<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>,
-         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">m</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>),
-         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">m</span> ~ <span class="no">x</span> + <span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
+<div class="sourceCode" id="cb7"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>,
+         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">c</span> ~ <span class="no">x</span> + <span class="no">m_01</span> + <span class="no">x</span>*<span class="no">m_01</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
+         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">m_01</span> ~ <span class="no">x</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
          <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>)</pre></body></html></div>
-<pre class="sas"><code>%mediation(data = data, yvar = y, avar = x, mvar = m, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = logistic, interaction = true, casecontrol=, output=, c=, boot=, cens=);
+<pre class="sas"><code>%mediation(data = mediation_example, yvar = c, avar = x, mvar = m_01, cvar = , a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = logistic, interaction = true, casecontrol=, output=, c=, boot=, cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
 <td>
@@ -378,31 +379,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.23692</td>
-<td align="left">-0.15452</td>
-<td align="left">0.62835</td>
+<td align="left">0.018</td>
+<td align="left">-0.35</td>
+<td align="left">0.386</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.07713</td>
-<td align="left">-0.22195</td>
-<td align="left">0.37621</td>
+<td align="left">0</td>
+<td align="left">-0.283</td>
+<td align="left">0.284</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">-0.00355</td>
-<td align="left">-0.03535</td>
-<td align="left">0.02825</td>
+<td align="left">0</td>
+<td align="left">-0.017</td>
+<td align="left">0.017</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.07358</td>
-<td align="left">-0.20348</td>
-<td align="left">0.35063</td>
+<td align="left">0.001</td>
+<td align="left">-0.257</td>
+<td align="left">0.258</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.04824</td>
+<td align="left">0.598</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -420,31 +421,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.23692</td>
-<td align="left">-0.15452</td>
-<td align="left">0.62836</td>
+<td align="left">0.018</td>
+<td align="left">-0.35</td>
+<td align="left">0.386</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.07713</td>
-<td align="left">-0.20195</td>
-<td align="left">0.3562</td>
+<td align="left">0</td>
+<td align="left">-0.257</td>
+<td align="left">0.258</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">-0.00355</td>
-<td align="left">-0.03535</td>
-<td align="left">0.02825</td>
+<td align="left">0</td>
+<td align="left">-0.017</td>
+<td align="left">0.017</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.07358</td>
-<td align="left">-0.2075</td>
-<td align="left">0.35466</td>
+<td align="left">0.001</td>
+<td align="left">-0.257</td>
+<td align="left">0.258</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.048235</td>
+<td align="left">0.598</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -456,11 +457,12 @@ run;</code></pre>
 <div id="binary-outcome-and-continuous-mediator" class="section level4">
 <h4 class="hasAnchor">
 <a href="#binary-outcome-and-continuous-mediator" class="anchor"></a>Binary outcome and continuous mediator</h4>
-<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>,
-         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">cens</span> ~ <span class="no">x</span> + <span class="no">y</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">y</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
-         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">example250</span>),
+<div class="sourceCode" id="cb9"><html><body><pre class="r"><span class="fu"><a href="../reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>,
+         <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">m</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m</span>,
+                         <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>, <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>),
+         <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">m</span> ~ <span class="no">x</span> + <span class="no">c</span>, <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
          <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>)</pre></body></html></div>
-<pre class="sas"><code>%mediation(data = data, yvar = cens, avar = x, mvar = y, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = linear, interaction = true, casecontrol=, output=, c=, boot=, cens=);
+<pre class="sas"><code>%mediation(data = mediation_example, yvar = y, avar = x, mvar = y, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = linear, interaction = true, casecontrol=, output=, c=, boot=, cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
 <td>
@@ -474,31 +476,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.42792</td>
-<td align="left">0.14331</td>
-<td align="left">1.27772</td>
+<td align="left">1.005</td>
+<td align="left">0.314</td>
+<td align="left">3.222</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.71508</td>
-<td align="left">0.20414</td>
-<td align="left">2.50483</td>
+<td align="left">0.62</td>
+<td align="left">0.224</td>
+<td align="left">1.716</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">1.06904</td>
-<td align="left">0.82487</td>
-<td align="left">1.38549</td>
+<td align="left">0.803</td>
+<td align="left">0.506</td>
+<td align="left">1.274</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.76445</td>
-<td align="left">0.25065</td>
-<td align="left">2.33153</td>
+<td align="left">0.498</td>
+<td align="left">0.103</td>
+<td align="left">2.403</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.20959</td>
+<td align="left">0.244</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
@@ -516,31 +518,31 @@ run;</code></pre>
 <tbody>
 <tr class="odd">
 <td align="left">CDE</td>
-<td align="left">0.42792</td>
-<td align="left">0.14328</td>
-<td align="left">1.27802</td>
+<td align="left">1.005</td>
+<td align="left">0.314</td>
+<td align="left">3.221</td>
 </tr>
 <tr class="even">
 <td align="left">NDE</td>
-<td align="left">0.71508</td>
-<td align="left">0.20414</td>
-<td align="left">2.50493</td>
+<td align="left">0.62</td>
+<td align="left">0.224</td>
+<td align="left">1.715</td>
 </tr>
 <tr class="odd">
 <td align="left">NIE</td>
-<td align="left">1.06904</td>
-<td align="left">0.82486</td>
-<td align="left">1.38549</td>
+<td align="left">0.803</td>
+<td align="left">0.506</td>
+<td align="left">1.274</td>
 </tr>
 <tr class="even">
 <td align="left">Total Effect</td>
-<td align="left">0.76445</td>
-<td align="left">0.2121</td>
-<td align="left">2.75528</td>
+<td align="left">0.498</td>
+<td align="left">0.207</td>
+<td align="left">1.2</td>
 </tr>
 <tr class="odd">
 <td align="left">Proportion Mediated</td>
-<td align="left">-0.20959</td>
+<td align="left">0.244</td>
 <td align="left">NA</td>
 <td align="left">NA</td>
 </tr>
