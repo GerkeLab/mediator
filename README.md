@@ -41,8 +41,8 @@ specification on the part of the user.
 
 To demonstrate usage, we consider the `mediation_example` data included
 with `mediator`. This data set contains exposure/treatment variable `x`
-(binary), mediator variable `m` (continuous), outcome variable `y`
-(binary), and confounder `c` (continuous).
+(binary), mediator variables `m` (continuous) and `m_01` (binary),
+outcome variable `y` (binary), and confounder `c` (continuous).
 
 ![](man/figures/mediator-dag.png)
 
@@ -54,21 +54,23 @@ the CDE and NDE are the same.
 The simplest use case of `mediator` would be as follows:
 
 ``` r
-mediator::mediator(data = example250,
-                   out.model = glm(cens ~ x + y + c + x*y, 
+
+
+mediator::mediator(data = mediation_example,
+                   out.model = glm(y ~ x + m_01 + c + x*m_01, 
                                    family = "binomial",
-                                   data = example250),
-                   med.model = lm(y ~ x + c, 
-                                  data = example250),
+                                   data = mediation_example),
+                   med.model = lm(m_01 ~ x + c, 
+                                  data = mediation_example),
                    treat = "x")
 ## # A tibble: 5 x 4
 ##   Effect              Estimate `Lower 95% CI` `Upper 95% CI`
 ##   <chr>                  <dbl>          <dbl>          <dbl>
-## 1 CDE                    0.428          0.143           1.28
-## 2 NDE                    0.715          0.204           2.50
-## 3 NIE                    1.07           0.825           1.39
-## 4 Total Effect           0.764          0.251           2.33
-## 5 Proportion Mediated   -0.210         NA              NA
+## 1 CDE                   0.279          0.0581           1.34
+## 2 NDE                   0.523          0.173            1.59
+## 3 NIE                   1.06           0.886            1.26
+## 4 Total Effect          0.553          0.216            1.42
+## 5 Proportion Mediated  -0.0656        NA               NA
 ```
 
 A data frame (printed to the console if not assigned to an object) is
@@ -80,11 +82,11 @@ When the oucome model is a linear regression, the results are
 intrepreted as average values. Relative risks can be used for binary
 outcomes when appropriate and thus intrepreted under that model.
 
-In this example, based on the CDE, when `y` = 1, the effect of `x` on
-`cens` is 0.43; while according to the NDE, when `y` is the value
-observed in the absense of `x` (`x` = 0), the effect of `x` on `cens` is
-0.72. The NIE tells that the effect of `x` on `cens` through `y` is
-1.07. The TE of `x` on `cens` , both direct and indirect, is 0.76.
+In this example, based on the CDE, when `m_01` = 1, the effect of `x` on
+`y` is 0.28; while according to the NDE, when `m_01` is the value
+observed in the absense of `x` (`x` = 0), the effect of `x` on `y` is
+0.52. The NIE tells that the effect of `x` on `y` through `m_01` is
+1.06. The TE of `x` on `y` , both direct and indirect, is 0.55.
 
 Since the TE is the combined effect of the NDE and NIE, statistically
 significant effects can be observed in opposite directions and result in
