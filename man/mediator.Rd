@@ -61,10 +61,3 @@ the counterfactual framework assuming interation between the exposure
 and mediator. Currently the function works for binary and continuous
 outcomes and mediators.
 }
-\examples{
-mediator(data = example250,
-         out.model = lm(y ~ x + c + m + x*c, data = example250),
-         med.model = lm(c ~ x + m, data = example250),
-         treat = "x")
-
-}
