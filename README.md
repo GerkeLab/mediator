@@ -57,20 +57,21 @@ The simplest use case of `mediator` would be as follows:
 
 
 mediator::mediator(data = mediation_example,
-                   out.model = glm(y ~ x + m_01 + c + x*m_01, 
+                   out.model = glm(y ~ x + m_01 + c + x*m_01,
                                    family = "binomial",
                                    data = mediation_example),
-                   med.model = lm(m_01 ~ x + c, 
-                                  data = mediation_example),
+                   med.model = glm(m_01 ~ x + c, 
+                                   family = "binomial",
+                                   data = mediation_example),
                    treat = "x")
 ## # A tibble: 5 x 4
 ##   Effect              Estimate `Lower 95% CI` `Upper 95% CI`
 ##   <chr>                  <dbl>          <dbl>          <dbl>
 ## 1 CDE                   0.279          0.0581           1.34
-## 2 NDE                   0.523          0.173            1.59
-## 3 NIE                   1.06           0.886            1.26
-## 4 Total Effect          0.553          0.216            1.42
-## 5 Proportion Mediated  -0.0656        NA               NA
+## 2 NDE                   0.517          0.226            1.19
+## 3 NIE                   1.05           0.905            1.22
+## 4 Total Effect          0.542          0.235            1.25
+## 5 Proportion Mediated  -0.0553        NA               NA
 ```
 
 A data frame (printed to the console if not assigned to an object) is
@@ -78,7 +79,7 @@ returned containing the point estimates and 95% confidence intervals.
 
 Since the outcome was a based on a binomial logistic regression, the
 results from this example are interpreted as a series of odds ratio.
-When the oucome model is a linear regression, the results are
+When the outcome model is a linear regression, the results are
 intrepreted as average values. Relative risks can be used for binary
 outcomes when appropriate and thus intrepreted under that model.
 
@@ -86,7 +87,7 @@ In this example, based on the CDE, when `m_01` = 1, the effect of `x` on
 `y` is 0.28; while according to the NDE, when `m_01` is the value
 observed in the absense of `x` (`x` = 0), the effect of `x` on `y` is
 0.52. The NIE tells that the effect of `x` on `y` through `m_01` is
-1.06. The TE of `x` on `y` , both direct and indirect, is 0.55.
+1.05. The TE of `x` on `y` , both direct and indirect, is 0.54.
 
 Since the TE is the combined effect of the NDE and NIE, statistically
 significant effects can be observed in opposite directions and result in
