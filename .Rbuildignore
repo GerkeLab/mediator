@@ -17,3 +17,6 @@
 ^clang-.*
 ^dev$
 ^data/mediation_example\.rds$
+^R/data-example250\.R$
+^data/example250\.rda$
+^man/example250\.Rd$
