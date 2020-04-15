@@ -122,20 +122,21 @@
                    <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">m_01</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m_01</span>,
                                    <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>,
                                    <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
-                   <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="no">m_01</span> ~ <span class="no">x</span> + <span class="no">c</span>,
-                                  <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
+                   <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">m_01</span> ~ <span class="no">x</span> + <span class="no">c</span>,
+                                   <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>,
+                                   <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
                    <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>)
 <span class="co">## # A tibble: 5 x 4</span>
 <span class="co">##   Effect              Estimate `Lower 95% CI` `Upper 95% CI`</span>
 <span class="co">##   &lt;chr&gt;                  &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;</span>
 <span class="co">## 1 CDE                   0.279          0.0581           1.34</span>
-<span class="co">## 2 NDE                   0.523          0.173            1.59</span>
-<span class="co">## 3 NIE                   1.06           0.886            1.26</span>
-<span class="co">## 4 Total Effect          0.553          0.216            1.42</span>
-<span class="co">## 5 Proportion Mediated  -0.0656        NA               NA</span></pre></div>
+<span class="co">## 2 NDE                   0.517          0.226            1.19</span>
+<span class="co">## 3 NIE                   1.05           0.905            1.22</span>
+<span class="co">## 4 Total Effect          0.542          0.235            1.25</span>
+<span class="co">## 5 Proportion Mediated  -0.0553        NA               NA</span></pre></div>
 <p>A data frame (printed to the console if not assigned to an object) is returned containing the point estimates and 95% confidence intervals.</p>
-<p>Since the outcome was a based on a binomial logistic regression, the results from this example are interpreted as a series of odds ratio. When the oucome model is a linear regression, the results are intrepreted as average values. Relative risks can be used for binary outcomes when appropriate and thus intrepreted under that model.</p>
-<p>In this example, based on the CDE, when <code>m_01</code> = 1, the effect of <code>x</code> on <code>y</code> is 0.28; while according to the NDE, when <code>m_01</code> is the value observed in the absense of <code>x</code> (<code>x</code> = 0), the effect of <code>x</code> on <code>y</code> is 0.52. The NIE tells that the effect of <code>x</code> on <code>y</code> through <code>m_01</code> is 1.06. The TE of <code>x</code> on <code>y</code> , both direct and indirect, is 0.55.</p>
+<p>Since the outcome was a based on a binomial logistic regression, the results from this example are interpreted as a series of odds ratio. When the outcome model is a linear regression, the results are intrepreted as average values. Relative risks can be used for binary outcomes when appropriate and thus intrepreted under that model.</p>
+<p>In this example, based on the CDE, when <code>m_01</code> = 1, the effect of <code>x</code> on <code>y</code> is 0.28; while according to the NDE, when <code>m_01</code> is the value observed in the absense of <code>x</code> (<code>x</code> = 0), the effect of <code>x</code> on <code>y</code> is 0.52. The NIE tells that the effect of <code>x</code> on <code>y</code> through <code>m_01</code> is 1.05. The TE of <code>x</code> on <code>y</code> , both direct and indirect, is 0.54.</p>
 <p>Since the TE is the combined effect of the NDE and NIE, statistically significant effects can be observed in opposite directions and result in a TE that is roughly equal to 0.</p>
 </div>
 <div id="additional-resources" class="section level2">
