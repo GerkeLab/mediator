@@ -74,6 +74,8 @@ Since the TE is the combined effect of the NDE and NIE, statistically significan
 
 ## Additional resources 
 
+[Slides and abstract](https://github.com/jhcreed/bsp2020-mediator) for a talk on mediation analysis using `mediator` given at the 2020 Best Statistical Practice Conference.
+
 For an in-depth explanation of mediation analysis or complementary tools for SAS or SPSS users, please check out Linda Valeri and Tyler VanderWeele's paper and  macros, which are available on VanderWeele's [website](https://www.hsph.harvard.edu/tyler-vanderweele/tools-and-tutorials/). 
 
 The parametric model-based approach of `mediator` differs from another R package, [`mediation`](https://cran.r-project.org/web/packages/mediation/vignettes/mediation.pdf), which conducts mediation analysis under a non-parametric framework. 

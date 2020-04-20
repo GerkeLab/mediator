@@ -95,6 +95,10 @@ a TE that is roughly equal to 0.
 
 ## Additional resources
 
+[Slides and abstract](https://github.com/jhcreed/bsp2020-mediator) for a
+talk on mediation analysis using `mediator` given at the 2020 Best
+Statistical Practice Conference.
+
 For an in-depth explanation of mediation analysis or complementary tools
 for SAS or SPSS users, please check out Linda Valeri and Tyler
 VanderWeele’s paper and macros, which are available on VanderWeele’s
