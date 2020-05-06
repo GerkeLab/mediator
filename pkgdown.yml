@@ -3,7 +3,7 @@ pkgdown: 1.5.1
 pkgdown_sha: ~
 articles:
   mediator-intro: mediator-intro.html
-last_built: 2020-05-05T04:10Z
+last_built: 2020-05-06T04:12Z
 urls:
   reference: https://gerkelab.github.io/mediator/reference
   article: https://gerkelab.github.io/mediator/articles
