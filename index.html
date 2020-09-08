@@ -104,8 +104,10 @@
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>You can install <code>mediator</code> from GitHub with:</p>
-<div class="sourceCode" id="cb1"><pre class="r"><span class="co"># install.packages("devtools")</span>
-<span class="kw pkg">devtools</span><span class="kw ns">::</span><span class="fu">install_github</span>(<span class="st">"gerkelab/mediator"</span>)</pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit">
+<span class="co"># install.packages("devtools")</span>
+<span class="kw">devtools</span>::<span class="fu">install_github</span>(<span class="st">"gerkelab/mediator"</span>)
+</pre></div>
 <!--- add CRAN once up --->
 </div>
 <div id="usage" class="section level2">
@@ -116,16 +118,17 @@
 <p><img src="reference/figures/mediator-dag.png"></p>
 <p>In the above DAG the path for the NIE is shown in blue while the path for the NDE is in purple. The TE is the combined effect of both the NIE and NDE. When no interaction between the exposure and mediator exists, the CDE and NDE are the same.</p>
 <p>The simplest use case of <code>mediator</code> would be as follows:</p>
-<div class="sourceCode" id="cb2"><pre class="r">
+<div class="sourceCode" id="cb2"><pre class="downlit">
 
-<span class="kw pkg">mediator</span><span class="kw ns">::</span><span class="fu"><a href="reference/mediator.html">mediator</a></span>(<span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>,
-                   <span class="kw">out.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">y</span> ~ <span class="no">x</span> + <span class="no">m_01</span> + <span class="no">c</span> + <span class="no">x</span>*<span class="no">m_01</span>,
-                                   <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>,
-                                   <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
-                   <span class="kw">med.model</span> <span class="kw">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="no">m_01</span> ~ <span class="no">x</span> + <span class="no">c</span>,
-                                   <span class="kw">family</span> <span class="kw">=</span> <span class="st">"binomial"</span>,
-                                   <span class="kw">data</span> <span class="kw">=</span> <span class="no">mediation_example</span>),
-                   <span class="kw">treat</span> <span class="kw">=</span> <span class="st">"x"</span>)
+
+<span class="kw">mediator</span>::<span class="fu"><a href="reference/mediator.html">mediator</a></span>(data = <span class="kw">mediation_example</span>,
+                   out.model = <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="kw">y</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">m_01</span> <span class="op">+</span> <span class="kw">c</span> <span class="op">+</span> <span class="kw">x</span><span class="op">*</span><span class="kw">m_01</span>,
+                                   family = <span class="st">"binomial"</span>,
+                                   data = <span class="kw">mediation_example</span>),
+                   med.model = <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="kw">m_01</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">c</span>, 
+                                   family = <span class="st">"binomial"</span>,
+                                   data = <span class="kw">mediation_example</span>),
+                   treat = <span class="st">"x"</span>)
 <span class="co">## # A tibble: 5 x 4</span>
 <span class="co">##   Effect              Estimate `Lower 95% CI` `Upper 95% CI`</span>
 <span class="co">##   &lt;chr&gt;                  &lt;dbl&gt;          &lt;dbl&gt;          &lt;dbl&gt;</span>
@@ -133,7 +136,8 @@
 <span class="co">## 2 NDE                   0.517          0.226            1.19</span>
 <span class="co">## 3 NIE                   1.05           0.905            1.22</span>
 <span class="co">## 4 Total Effect          0.542          0.235            1.25</span>
-<span class="co">## 5 Proportion Mediated  -0.0553        NA               NA</span></pre></div>
+<span class="co">## 5 Proportion Mediated  -0.0553        NA               NA</span>
+</pre></div>
 <p>A data frame (printed to the console if not assigned to an object) is returned containing the point estimates and 95% confidence intervals.</p>
 <p>Since the outcome was a based on a binomial logistic regression, the results from this example are interpreted as a series of odds ratio. When the outcome model is a linear regression, the results are intrepreted as average values. Relative risks can be used for binary outcomes when appropriate and thus intrepreted under that model.</p>
 <p>In this example, based on the CDE, when <code>m_01</code> = 1, the effect of <code>x</code> on <code>y</code> is 0.28; while according to the NDE, when <code>m_01</code> is the value observed in the absense of <code>x</code> (<code>x</code> = 0), the effect of <code>x</code> on <code>y</code> is 0.52. The NIE tells that the effect of <code>x</code> on <code>y</code> through <code>m_01</code> is 1.05. The TE of <code>x</code> on <code>y</code> , both direct and indirect, is 0.54.</p>
@@ -203,7 +207,7 @@
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.5.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.0.</p>
 </div>
 
       </footer>
