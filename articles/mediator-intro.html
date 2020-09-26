@@ -95,7 +95,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Introduction to causal mediation</h1>
             
-            <h4 class="date">2020-09-25</h4>
+            <h4 class="date">2020-09-26</h4>
       
       <small class="dont-index">Source: <a href="http://github.com/gerkelab/mediator/blob/master/vignettes/mediator-intro.Rmd"><code>vignettes/mediator-intro.Rmd</code></a></small>
       <div class="hidden name"><code>mediator-intro.Rmd</code></div>
@@ -111,7 +111,7 @@
 <a href="#data" class="anchor"></a>Data</h2>
 <p>In this vignette, we will use randomly generated data - <code>example250.rda</code>. The data is an extended version of the data provided in the SAS macro <code>%mediation</code>, with the same columns but 250 rows.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit">
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span>(<span class="kw">mediation_example</span>)
+<span class="fu"><a href="https://rdrr.io/r/utils/head.html">head</a></span><span class="op">(</span><span class="va">mediation_example</span><span class="op">)</span>
 <span class="co">#&gt;   x m_01          m y          c</span>
 <span class="co">#&gt; 1 0    1 0.00965707 0  0.5529378</span>
 <span class="co">#&gt; 2 0    1 0.30360478 0 -0.7385979</span>
@@ -120,9 +120,8 @@
 <span class="co">#&gt; 5 0    0 0.12708356 0 -1.2719255</span>
 <span class="co">#&gt; 6 0    0 0.12181193 0  1.9804641</span>
 
-<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(<span class="kw">mediation_example</span>)
-<span class="co">#&gt; [1] 250   5</span>
-</pre></div>
+<span class="fu"><a href="https://rdrr.io/r/base/dim.html">dim</a></span><span class="op">(</span><span class="va">mediation_example</span><span class="op">)</span>
+<span class="co">#&gt; [1] 250   5</span></pre></div>
 </div>
 <div id="introduction" class="section level2">
 <h2 class="hasAnchor">
@@ -151,14 +150,13 @@
 <a href="#usage" class="anchor"></a>Usage</h2>
 <p><code>mediator</code> returns a data frame containing the point estimates and CIs for CDE, NDE, NIE and TE as well as the point estimates for the PM. The function assumes appropriate modeling (for the outcome and mediator models) on the part of the user and allows (but does not require) interaction between the exposure and the mediator. A basic example of function is shown below:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit">
-<span class="fu"><a href="../reference/mediator.html">mediator</a></span>(data = <span class="kw">mediation_example</span>,
-         out.model = <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="kw">y</span> <span class="op">~</span> <span class="kw">x</span>  <span class="op">+</span> <span class="kw">m</span> <span class="op">+</span> <span class="kw">c</span> <span class="op">+</span> <span class="kw">x</span><span class="op">*</span><span class="kw">m</span>, data = <span class="kw">mediation_example</span>),
-         med.model = <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="kw">m</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">c</span>, data = <span class="kw">mediation_example</span>),
-         treat = <span class="st">"x"</span>,
-         a = <span class="fl">1</span>, a_star = <span class="fl">0</span>,
-         m = <span class="fl">0</span>,
-         boot_rep = <span class="fl">0</span>)
-</pre></div>
+<span class="fu"><a href="../reference/mediator.html">mediator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mediation_example</span>,
+         out.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span>  <span class="op">+</span> <span class="va">m</span> <span class="op">+</span> <span class="va">c</span> <span class="op">+</span> <span class="va">x</span><span class="op">*</span><span class="va">m</span>, data <span class="op">=</span> <span class="va">mediation_example</span><span class="op">)</span>,
+         med.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">m</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">c</span>, data <span class="op">=</span> <span class="va">mediation_example</span><span class="op">)</span>,
+         treat <span class="op">=</span> <span class="st">"x"</span>,
+         a <span class="op">=</span> <span class="fl">1</span>, a_star <span class="op">=</span> <span class="fl">0</span>,
+         m <span class="op">=</span> <span class="fl">0</span>,
+         boot_rep <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></pre></div>
 <p>Setting <code>boot_rep = 0</code>, tells the function to use the Delta method for calculating confidence intervals. <code>a</code> and <code>a_star</code> represent the level of exposure and its comparison level, which for binary exposures are often 1 and 0, but can be set at any pair of numeric values. In the above example, <code>a</code>, <code>a_star</code>, <code>m</code> and <code>boot_rep</code> are all set to their default values.</p>
 </div>
 <div id="mediator-vs-mediation" class="section level2">
@@ -173,11 +171,10 @@
 <h4 class="hasAnchor">
 <a href="#continuous-outcome-and-mediator" class="anchor"></a>Continuous outcome and mediator</h4>
 <div class="sourceCode" id="cb3"><pre class="downlit">
-<span class="fu"><a href="../reference/mediator.html">mediator</a></span>(data = <span class="kw">mediation_example</span>,
-         out.model = <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="kw">c</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">m</span> <span class="op">+</span> <span class="kw">x</span><span class="op">*</span><span class="kw">m</span>, data = <span class="kw">mediation_example</span>),
-         med.model = <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="kw">m</span> <span class="op">~</span> <span class="kw">x</span>, data = <span class="kw">mediation_example</span>),
-         treat = <span class="st">"x"</span>)
-</pre></div>
+<span class="fu"><a href="../reference/mediator.html">mediator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mediation_example</span>,
+         out.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">c</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">m</span> <span class="op">+</span> <span class="va">x</span><span class="op">*</span><span class="va">m</span>, data <span class="op">=</span> <span class="va">mediation_example</span><span class="op">)</span>,
+         med.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">m</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">mediation_example</span><span class="op">)</span>,
+         treat <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span></pre></div>
 <pre class="sas"><code>%mediation(data = mediation_example, yvar = c, avar = x, mvar = m, cvar = , a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = linear, interaction = true, casecontrol =, output =, c =, boot =, cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
@@ -271,12 +268,11 @@ run;</code></pre>
 <h4 class="hasAnchor">
 <a href="#binary-outcome-and-mediator" class="anchor"></a>Binary outcome and mediator</h4>
 <div class="sourceCode" id="cb5"><pre class="downlit">
-<span class="fu"><a href="../reference/mediator.html">mediator</a></span>(data = <span class="kw">mediation_example</span>,
-         out.model = <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="kw">y</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">m_01</span> <span class="op">+</span> <span class="kw">c</span> <span class="op">+</span> <span class="kw">x</span><span class="op">*</span><span class="kw">m_01</span>, 
-                         data = <span class="kw">mediation_example</span>, family = <span class="st">"binomial"</span>),
-         med.model = <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="kw">m_01</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">c</span>, data = <span class="kw">mediation_example</span>, family = <span class="st">"binomial"</span>),
-         treat = <span class="st">"x"</span>)
-</pre></div>
+<span class="fu"><a href="../reference/mediator.html">mediator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mediation_example</span>,
+         out.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">m_01</span> <span class="op">+</span> <span class="va">c</span> <span class="op">+</span> <span class="va">x</span><span class="op">*</span><span class="va">m_01</span>, 
+                         data <span class="op">=</span> <span class="va">mediation_example</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span>,
+         med.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">m_01</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">c</span>, data <span class="op">=</span> <span class="va">mediation_example</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span>,
+         treat <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span></pre></div>
 <pre class="sas"><code>%mediation(data = mediation_example, yvar = y, avar = x, mvar = m_01, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = logistic, interaction = true, casecontrol=,output=,c=,boot=,cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
@@ -370,11 +366,10 @@ run;</code></pre>
 <h4 class="hasAnchor">
 <a href="#continous-outcome-and-binary-mediator" class="anchor"></a>Continous outcome and binary mediator</h4>
 <div class="sourceCode" id="cb7"><pre class="downlit">
-<span class="fu"><a href="../reference/mediator.html">mediator</a></span>(data = <span class="kw">mediation_example</span>,
-         out.model = <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="kw">c</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">m_01</span> <span class="op">+</span> <span class="kw">x</span><span class="op">*</span><span class="kw">m_01</span>, data = <span class="kw">mediation_example</span>),
-         med.model = <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="kw">m_01</span> <span class="op">~</span> <span class="kw">x</span>, data = <span class="kw">mediation_example</span>, family = <span class="st">"binomial"</span>),
-         treat = <span class="st">"x"</span>)
-</pre></div>
+<span class="fu"><a href="../reference/mediator.html">mediator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mediation_example</span>,
+         out.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">c</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">m_01</span> <span class="op">+</span> <span class="va">x</span><span class="op">*</span><span class="va">m_01</span>, data <span class="op">=</span> <span class="va">mediation_example</span><span class="op">)</span>,
+         med.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">m_01</span> <span class="op">~</span> <span class="va">x</span>, data <span class="op">=</span> <span class="va">mediation_example</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span>,
+         treat <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span></pre></div>
 <pre class="sas"><code>%mediation(data = mediation_example, yvar = c, avar = x, mvar = m_01, cvar = , a0 = 0, a1 = 1, m = 0, yreg = linear, mreg = logistic, interaction = true, casecontrol=, output=, c=, boot=, cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
@@ -468,12 +463,11 @@ run;</code></pre>
 <h4 class="hasAnchor">
 <a href="#binary-outcome-and-continuous-mediator" class="anchor"></a>Binary outcome and continuous mediator</h4>
 <div class="sourceCode" id="cb9"><pre class="downlit">
-<span class="fu"><a href="../reference/mediator.html">mediator</a></span>(data = <span class="kw">mediation_example</span>,
-         out.model = <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span>(<span class="kw">y</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">m</span> <span class="op">+</span> <span class="kw">c</span> <span class="op">+</span> <span class="kw">x</span><span class="op">*</span><span class="kw">m</span>, 
-                         data = <span class="kw">mediation_example</span>, family = <span class="st">"binomial"</span>),
-         med.model = <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span>(<span class="kw">m</span> <span class="op">~</span> <span class="kw">x</span> <span class="op">+</span> <span class="kw">c</span>, data = <span class="kw">mediation_example</span>),
-         treat = <span class="st">"x"</span>)
-</pre></div>
+<span class="fu"><a href="../reference/mediator.html">mediator</a></span><span class="op">(</span>data <span class="op">=</span> <span class="va">mediation_example</span>,
+         out.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/glm.html">glm</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">m</span> <span class="op">+</span> <span class="va">c</span> <span class="op">+</span> <span class="va">x</span><span class="op">*</span><span class="va">m</span>, 
+                         data <span class="op">=</span> <span class="va">mediation_example</span>, family <span class="op">=</span> <span class="st">"binomial"</span><span class="op">)</span>,
+         med.model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/lm.html">lm</a></span><span class="op">(</span><span class="va">m</span> <span class="op">~</span> <span class="va">x</span> <span class="op">+</span> <span class="va">c</span>, data <span class="op">=</span> <span class="va">mediation_example</span><span class="op">)</span>,
+         treat <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span></pre></div>
 <pre class="sas"><code>%mediation(data = mediation_example, yvar = y, avar = x, mvar = y, cvar = c, a0 = 0, a1 = 1, m = 0, yreg = logistic, mreg = linear, interaction = true, casecontrol=, output=, c=, boot=, cens=);
 run;</code></pre>
 <table class="table kable_wrapper"><tbody><tr>
