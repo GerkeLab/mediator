@@ -28,11 +28,11 @@
 #' @return Tibble containing point estimates and 95 percent CI for the
 #'   CDE, NDE, NIE and TE and the point estimate for the proportion mediated.
 #'
-#' @examples
-#' mediator(data = example250,
-#'          out.model = lm(y ~ x + c + m + x*c, data = example250),
-#'          med.model = lm(c ~ x + m, data = example250),
-#'          treat = "x")
+#' @example
+#' mediator::mediator(data = mediation_example,
+#' out.model = glm(y ~ x + m + c + x*m, data = mediation_example),
+#' med.model = lm(m ~ x + c, data = mediation_example,),
+#' treat = "x")
 #'
 #' @importFrom rlang .data
 #'
